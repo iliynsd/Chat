@@ -65,5 +65,7 @@ namespace Chat.Repositories
 
             return messages;
         }
+
+        public List<Message> GetChatMessages(Chat chat) => _messages.FindAll(i => i.IsActive).FindAll(i => i.ChatId == chat.Id);
     }
 }

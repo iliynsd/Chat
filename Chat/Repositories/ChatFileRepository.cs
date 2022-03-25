@@ -71,5 +71,7 @@ namespace Chat.Repositories
 
             return chats;
         }
+
+        public Chat GetChat(string chatName) => _chats.FindAll(i => i.IsActive).Find(i => i.Name == chatName);
     }
 }

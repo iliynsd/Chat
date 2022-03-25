@@ -9,5 +9,7 @@ namespace Chat.Repositories
         public List<Message> GetAll();
         public void SaveToDb(string source);
         public void GetFromDb(string source);
+
+        public List<Message> GetChatMessages(Chat chat);
     }
 }

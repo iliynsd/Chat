@@ -42,12 +42,12 @@ namespace Chat
         {
             var username = _menu.SignIn();
 
+            //Console.WriteLine(_chats.GetChat("chatuser2").Id);
+
             if (IsUserExist(username))
             {
                 if (UserHasChats(username))
                 {
-
-                    
                     var chats = GetChats(username);
                         foreach (var chat in chats)
                         {
@@ -55,7 +55,7 @@ namespace Chat
                             {
                                 var lastMessage = GetLastMessage(chat);
                                 var authorOfLastMessage = GetAuthorOfLastMessage(lastMessage);
-                                _menu.ShowChat(chat, authorOfLastMessage, lastMessage);
+                                _menu.ShowChatWithLastMessage(chat, lastMessage.Text, authorOfLastMessage);
                             }
                         }
               
@@ -92,14 +92,22 @@ namespace Chat
 
         private void OpenChat()
         {
-            var chat = _chats.GetAll().Find(i => i.Name == _menu.GetChatNameToOpen());
+            var chatname = _menu.GetChatNameToOpen();
+            var chat = _chats.GetAll().Find(i => i.Name == chatname);
             var users = _users.GetAll().FindAll(i => chat.UserIds.Contains(i.Id));
-            _menu.OpenChat(chat, GetChatMessages(chat), users);
+            _menu.OpenChat(chat, _messages.GetChatMessages(chat), users);
+            _menu.ChatActions();
         }
 
-        private void DeleteChat(){}
+        private void DeleteChat()
+        {
+            _menu.DeleteChat(_chats);
+        }
         
-        private void DeleteMessage(){}
+        private void DeleteMessage()
+        {
+            _menu.DeleteMessage(_chats, _messages);
+        }
         
         private void BotInvoke(){}
 
@@ -126,24 +134,17 @@ namespace Chat
 
                 cmd = Console.ReadLine();
             }
-
-
-            // _messages.SaveToDb(pathOptions.PathToMessages);
-            
-            //  _chatActions.SaveToDb(pathOptions.PathToChatActions);
         }
 
         private List<Chat> GetChats(string username) => _chats.GetAll().FindAll(i => i.UserIds.Contains(_users.Get(username).Id));
         
-        public  Message GetLastMessage(Chat chat) => _messages.GetAll().GroupBy(i => i.ChatId == chat.Id).SelectMany(group => group).Last();
+        public  Message GetLastMessage(Chat chat) => _messages.GetChatMessages(chat).Last();
 
-        private List<Message> GetChatMessages(Chat chat) => _messages.GetAll().GroupBy(i => i.ChatId == chat.Id).SelectMany(group => group).ToList();
-        
         private User GetAuthorOfLastMessage(Message lastMessage) => _users.GetAll().Find(i => lastMessage.UserId == i.Id);
         
         private void CreateChat()
         {
-            _chats.Add(_menu.CreateChat(_users.GetAll(), _chats.GetAll()));
+            _chats.Add(_menu.CreateChat(_users, _chats));
         }
 
         private bool IsChatNotEmpty(Chat chat) => _messages.GetAll().Select(i => i.ChatId).Contains(chat.Id);

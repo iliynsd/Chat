@@ -7,7 +7,7 @@ namespace Chat.Utils
     {
         public string SignIn();
         
-        public void ShowChat(Chat chat, User user, Message message);
+        public void ShowChatWithLastMessage(Chat chat, string message, User user);
 
         public void ShowMainMenu();
 
@@ -25,12 +25,18 @@ namespace Chat.Utils
 
         public void IncorrectUserName();
 
-        public Chat CreateChat(List<User> users, List<Chat> chats);
+        public Chat CreateChat(IUserRepository users, IChatRepository chats);
 
         public void ShowFitstChatCreate();
 
         public void SuccessSignUp();
 
         public Message AddMessage(IMessageRepository messages, IChatRepository chats, IUserRepository users);
+
+        public string ChatActions();
+
+        public void DeleteMessage(IChatRepository chats, IMessageRepository messages);
+
+        public void DeleteChat(IChatRepository chats);
     }
 }
