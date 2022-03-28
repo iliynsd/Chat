@@ -15,7 +15,6 @@ namespace Chat
         private IUserRepository _users;
         private IChatActionsRepository _chatActions;
 
-
         public Messenger(IMenu menu, IChatRepository chats, IMessageRepository messages, IUserRepository users, IChatActionsRepository chatActions)
         {
             _functional = new Dictionary<string, Action>()
@@ -109,21 +108,21 @@ namespace Chat
 
         private void CreateChat() => _chats.Add(_menu.CreateChat(_users, _chats));
 
-        public void Start(Options options)
+        public void Start()
         {
             _menu.ShowAuthorizationPage();
-            _users.GetFromDb(options.PathToUsers);
-            _chats.GetFromDb(options.PathToChats);
-            _messages.GetFromDb(options.PathToMessages);
+            _users.GetFromDb();
+            _chats.GetFromDb();
+            _messages.GetFromDb();
             var cmd = Console.ReadLine();
             while (cmd != "exit")
             {
                 if (_functional.ContainsKey(cmd))
                 {
                     _functional[cmd]?.Invoke();
-                    _chats.SaveToDb(options.PathToChats);
-                    _users.SaveToDb(options.PathToUsers);
-                    _messages.SaveToDb(options.PathToMessages);
+                    _chats.SaveToDb();
+                    _users.SaveToDb();
+                    _messages.SaveToDb();
                 }
                 else
                 {

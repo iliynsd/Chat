@@ -11,7 +11,7 @@ namespace Chat.Repositories
         public bool IsUserExist(string username);
 
         public bool UserHasChats(string userName);
-        public void SaveToDb(string source);
-        public void GetFromDb(string source);
+        public void SaveToDb();
+        public void GetFromDb();
     }
 }

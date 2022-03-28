@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -5,13 +6,14 @@ using System.Linq;
 
 namespace Chat.Repositories
 {
-    public class MessageFileRepository : FileBaseRepository<MessageFileRepository>, IMessageRepository
+    public class MessageFileRepository : FileBaseRepository<List<Message>>, IMessageRepository
     {
         private List<Message> _messages;
-
-        public MessageFileRepository()
+        private Options _options;
+        public MessageFileRepository(IOptions<Options> options)
         {
             _messages = new List<Message>();
+            _options = options.Value;
         }
 
         public void Add(Message message) => _messages.Add(message);
@@ -20,13 +22,13 @@ namespace Chat.Repositories
 
         public List<Message> GetAll() => _messages.FindAll(i => i.IsActive);
 
-        public void SaveToDb(string source) => SaveToFile(this, source);
+        public void SaveToDb() => SaveToFile(_messages, _options.PathToMessages);
 
-        public void GetFromDb(string source) => _messages = GetFromFile(source).GetAll();
+        public void GetFromDb() => _messages = GetFromFile(_options.PathToMessages);
 
-        protected override void Write(BinaryWriter writer, MessageFileRepository item)
+        protected override void Write(BinaryWriter writer, List<Message> item)
         {
-            foreach (var message in item.GetAll())
+            foreach (var message in item)
             {
                 if (!string.IsNullOrEmpty(message.Text))
                 {
@@ -41,9 +43,9 @@ namespace Chat.Repositories
             }
         }
 
-        protected override MessageFileRepository Read(BinaryReader reader)
+        protected override List<Message> Read(BinaryReader reader)
         {
-            var messages = new MessageFileRepository();
+            var messages = new List<Message>();
 
             while (reader.PeekChar() > -1)
             {

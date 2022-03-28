@@ -6,7 +6,7 @@ namespace Chat.Repositories
     {
         public void Add(string action);
         public List<string> Get();
-        public void SaveToDb(string source);
-        public void GetFromDb(string source);
+        public void SaveToDb();
+        public void GetFromDb();
     }
 }

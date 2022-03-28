@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -5,13 +6,14 @@ using System.Linq;
 
 namespace Chat.Repositories
 {
-    public class ChatFileRepository : FileBaseRepository<ChatFileRepository>, IChatRepository
+    public class ChatFileRepository : FileBaseRepository<List<Chat>>, IChatRepository
     {
         private List<Chat> _chats;
-
-        public ChatFileRepository()
+        private Options _options;
+        public ChatFileRepository(IOptions<Options> options)
         {
             _chats = new List<Chat>();
+            _options = options.Value;
         }
 
         public void Add(Chat chat) => _chats.Add(chat);
@@ -20,13 +22,13 @@ namespace Chat.Repositories
 
         public List<Chat> GetAll() => _chats.FindAll(i => i.IsActive);
 
-        public void SaveToDb(string source) => SaveToFile(this, source);
+        public void SaveToDb() => SaveToFile(_chats, _options.PathToChats);
 
-        public void GetFromDb(string source) => _chats = GetFromFile(source).GetAll();
+        public void GetFromDb() => _chats = GetFromFile(_options.PathToChats);
 
-        protected override void Write(BinaryWriter writer, ChatFileRepository chats)
+        protected override void Write(BinaryWriter writer, List<Chat> chats)
         {
-            foreach (var chat in chats.GetAll())
+            foreach (var chat in chats)
             {
                 if (!string.IsNullOrEmpty(chat.Name))
                 {
@@ -44,9 +46,9 @@ namespace Chat.Repositories
             }
         }
 
-        protected override ChatFileRepository Read(BinaryReader reader)
+        protected override List<Chat> Read(BinaryReader reader)
         {
-            var chats = new ChatFileRepository();
+            var chats = new List<Chat>();
             while (reader.PeekChar() > -1)
             {
 

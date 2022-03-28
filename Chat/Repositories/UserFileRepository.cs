@@ -1,16 +1,19 @@
+using Microsoft.Extensions.Options;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
 namespace Chat.Repositories
 {
-    public class UserFileRepository : FileBaseRepository<UserFileRepository>, IUserRepository
+    public class UserFileRepository : FileBaseRepository<List<User>>, IUserRepository
     {
         private List<User> _users;
+        private Options _options;
 
-        public UserFileRepository()
+        public UserFileRepository(IOptions<Options> options)
         {
             _users = new List<User>();
+            _options = options.Value;
         }
 
         public void Add(User user) => _users.Add(user);
@@ -25,13 +28,13 @@ namespace Chat.Repositories
 
         public bool UserHasChats(string userName) => _users.FindAll(i => i.IsActive).Find(i => i.Name == userName).ChatIds.Count > 0;
 
-        public void SaveToDb(string source) => SaveToFile(this, source);
+        public void SaveToDb() => SaveToFile(_users, _options.PathToUsers);
 
-        public void GetFromDb(string source) => _users = GetFromFile(source).GetAll();
+        public void GetFromDb() => _users = GetFromFile(_options.PathToUsers);
 
-        protected override void Write(BinaryWriter writer, UserFileRepository userFileRepository)
+        protected override void Write(BinaryWriter writer, List<User> users)
         {
-            foreach (var user in userFileRepository.GetAll())
+            foreach (var user in users)
             {
                 if (!string.IsNullOrEmpty(user.Name))
                 {
@@ -59,9 +62,9 @@ namespace Chat.Repositories
             }
         }
 
-        protected override UserFileRepository Read(BinaryReader reader)
+        protected override List<User> Read(BinaryReader reader)
         {
-            var users = new UserFileRepository();
+            var users = new List<User>();
 
             while (reader.PeekChar() > -1)
             {
