@@ -1,18 +1,18 @@
-using System.Collections.Generic;
 using Chat.Repositories;
+using System.Collections.Generic;
 
 namespace Chat.Utils
 {
     public interface IMenu
     {
         public string SignIn();
-        
+
         public void ShowChatWithLastMessage(Chat chat, string message, User user);
 
         public void ShowMainMenu();
 
         public void ShowAuthorizationPage();
-        
+
         public void InvalidOperation();
 
         public void SignOut();
@@ -33,7 +33,7 @@ namespace Chat.Utils
 
         public Message AddMessage(IMessageRepository messages, IChatRepository chats, IUserRepository users);
 
-        public string ChatActions();
+        public void ChatActions();
 
         public void DeleteMessage(IChatRepository chats, IMessageRepository messages);
 

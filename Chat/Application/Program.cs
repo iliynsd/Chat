@@ -1,10 +1,10 @@
-﻿using System;
-using System.IO;
-using System.Threading.Tasks;
-using Chat.Repositories;
+﻿using Chat.Repositories;
 using Chat.Utils;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using System;
+using System.IO;
+using System.Threading.Tasks;
 
 namespace Chat
 {
@@ -12,15 +12,15 @@ namespace Chat
     {
         static async Task Main()
         {
-            
+
             var serviceCollection = new ServiceCollection();
             IConfiguration configuration = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetParent(AppContext.BaseDirectory).FullName).AddJsonFile("appSettings.json", optional:false).AddEnvironmentVariables()
+                .SetBasePath(Directory.GetParent(AppContext.BaseDirectory).FullName).AddJsonFile("appSettings.json", optional: false).AddEnvironmentVariables()
                 .Build();
-           
-            
+
+
             serviceCollection.Configure<Options>(configuration.GetSection(Options.Path).Bind);
-            
+
             serviceCollection.AddTransient<App>();
             serviceCollection.AddSingleton(configuration);
             serviceCollection.AddSingleton<Configuration>();
@@ -31,12 +31,13 @@ namespace Chat
             serviceCollection.AddSingleton<IChatRepository, ChatFileRepository>();
             serviceCollection.AddSingleton<IUserRepository, UserFileRepository>();
             serviceCollection.AddSingleton<IChatActionsRepository, ChatActionsFileRepository>();
-            
-            
+
+
             var serviceProvider = serviceCollection.BuildServiceProvider();
-            
-            
+
+
             await serviceProvider.GetRequiredService<App>().Run(serviceProvider);
         }
+
     }
 }

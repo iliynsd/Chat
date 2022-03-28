@@ -1,8 +1,8 @@
+using Chat.Repositories;
+using Chat.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Chat.Repositories;
-using Chat.Utils;
 
 namespace Chat
 {
@@ -28,6 +28,7 @@ namespace Chat
                 {"open-chat", OpenChat},
                 {"add-mes", AddMessage},
                 {"del-mes", DeleteMessage},
+                {"exit-chat", ExitChat},
                 {"bot", BotInvoke}
             };
 
@@ -42,23 +43,22 @@ namespace Chat
         {
             var username = _menu.SignIn();
 
-            //Console.WriteLine(_chats.GetChat("chatuser2").Id);
-
-            if (IsUserExist(username))
+            if (_users.IsUserExist(username))
             {
-                if (UserHasChats(username))
+                if (_users.UserHasChats(username))
                 {
                     var chats = GetChats(username);
-                        foreach (var chat in chats)
+
+                    foreach (var chat in chats)
+                    {
+                        if (_messages.IsChatNotEmpty(chat))
                         {
-                            if (IsChatNotEmpty(chat))
-                            {
-                                var lastMessage = GetLastMessage(chat);
-                                var authorOfLastMessage = GetAuthorOfLastMessage(lastMessage);
-                                _menu.ShowChatWithLastMessage(chat, lastMessage.Text, authorOfLastMessage);
-                            }
+                            var lastMessage = _messages.GetChatMessages(chat).Last();
+                            var authorOfLastMessage = GetAuthorOfLastMessage(lastMessage);
+                            _menu.ShowChatWithLastMessage(chat, lastMessage.Text, authorOfLastMessage);
                         }
-              
+                    }
+
                     _menu.ShowMainMenu();
                 }
                 else
@@ -78,13 +78,13 @@ namespace Chat
             _users.Add(_menu.SignUp(_users));
             _menu.SuccessSignUp();
         }
-        
+
         private void SignOut()
         {
             _menu.SignOut();
             _menu.ShowAuthorizationPage();
         }
-        
+
         private void AddMessage()
         {
             _messages.Add(_menu.AddMessage(_messages, _chats, _users));
@@ -99,17 +99,15 @@ namespace Chat
             _menu.ChatActions();
         }
 
-        private void DeleteChat()
-        {
-            _menu.DeleteChat(_chats);
-        }
-        
-        private void DeleteMessage()
-        {
-            _menu.DeleteMessage(_chats, _messages);
-        }
-        
-        private void BotInvoke(){}
+        private void DeleteChat() => _menu.DeleteChat(_chats);
+
+        private void DeleteMessage() => _menu.DeleteMessage(_chats, _messages);
+
+        private void ExitChat() { }
+
+        private void BotInvoke() { }
+
+        private void CreateChat() => _chats.Add(_menu.CreateChat(_users, _chats));
 
         public void Start(Options options)
         {
@@ -137,20 +135,7 @@ namespace Chat
         }
 
         private List<Chat> GetChats(string username) => _chats.GetAll().FindAll(i => i.UserIds.Contains(_users.Get(username).Id));
-        
-        public  Message GetLastMessage(Chat chat) => _messages.GetChatMessages(chat).Last();
 
         private User GetAuthorOfLastMessage(Message lastMessage) => _users.GetAll().Find(i => lastMessage.UserId == i.Id);
-        
-        private void CreateChat()
-        {
-            _chats.Add(_menu.CreateChat(_users, _chats));
-        }
-
-        private bool IsChatNotEmpty(Chat chat) => _messages.GetAll().Select(i => i.ChatId).Contains(chat.Id);
-        
-        private bool UserHasChats(string userName) => _users.Get(userName).ChatIds.Count > 0;
-        
-        private bool IsUserExist(string username) => _users.GetAll().Select(i => i.Name).Contains(username);
     }
 }

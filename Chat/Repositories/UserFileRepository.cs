@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -13,19 +12,23 @@ namespace Chat.Repositories
         {
             _users = new List<User>();
         }
-        
+
         public void Add(User user) => _users.Add(user);
 
         public void Delete(User user) => _users.Find(i => i.Id == user.Id).IsActive = false;
 
         public User Get(string userName) => _users.FindAll(i => i.IsActive).Find(i => i.Name == userName);
 
-        public List<User> GetAll() =>  _users.FindAll(i => i.IsActive);
+        public List<User> GetAll() => _users.FindAll(i => i.IsActive);
+
+        public bool IsUserExist(string username) => _users.Select(i => i.Name).Contains(username);
+
+        public bool UserHasChats(string userName) => _users.FindAll(i => i.IsActive).Find(i => i.Name == userName).ChatIds.Count > 0;
 
         public void SaveToDb(string source) => SaveToFile(this, source);
 
         public void GetFromDb(string source) => _users = GetFromFile(source).GetAll();
-        
+
         protected override void Write(BinaryWriter writer, UserFileRepository userFileRepository)
         {
             foreach (var user in userFileRepository.GetAll())
@@ -35,7 +38,7 @@ namespace Chat.Repositories
                     writer.Write(user.Id);
                     writer.Write(user.Type);
                     string chatIds = string.Empty;
-                    if(user.ChatIds.Count<1)
+                    if (user.ChatIds.Count < 1)
                     {
                         writer.Write("0;");
                     }
@@ -43,13 +46,13 @@ namespace Chat.Repositories
                     {
                         foreach (var id in user.ChatIds)
                         {
-                          chatIds += id;
-                          chatIds += ';';
-                         }
-                         writer.Write(chatIds);
+                            chatIds += id;
+                            chatIds += ';';
+                        }
+                        writer.Write(chatIds);
                     }
-                    
-                    
+
+
                     writer.Write(user.Name);
                     writer.Write(user.IsActive);
                 }
@@ -59,8 +62,8 @@ namespace Chat.Repositories
         protected override UserFileRepository Read(BinaryReader reader)
         {
             var users = new UserFileRepository();
-            
-            while(reader.PeekChar() > -1)
+
+            while (reader.PeekChar() > -1)
             {
                 var id = reader.ReadInt32();
                 var type = reader.ReadString();
@@ -70,10 +73,10 @@ namespace Chat.Repositories
                 var chatIds = chatIdsMas.Select(i => int.Parse(i)).ToList();
                 var name = reader.ReadString();
                 var isActive = reader.ReadBoolean();
-                
+
                 if (!string.IsNullOrEmpty(name))
                 {
-                    users.Add(new User() 
+                    users.Add(new User()
                     {
                         Id = id,
                         Type = type,
@@ -83,7 +86,7 @@ namespace Chat.Repositories
                     });
                 }
             }
-            
+
             return users;
         }
     }

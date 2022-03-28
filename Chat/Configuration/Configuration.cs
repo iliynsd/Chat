@@ -10,7 +10,7 @@ namespace Chat
         {
             _configuration = configuration;
         }
-        
+
         public string GetSection(string name) => _configuration.GetSection(name).Value;
     }
 }

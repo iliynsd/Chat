@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace Chat.Repositories
 {
@@ -12,17 +13,17 @@ namespace Chat.Repositories
         {
             _messages = new List<Message>();
         }
-        
+
         public void Add(Message message) => _messages.Add(message);
 
         public void Delete(Message message) => _messages.FindAll(i => i.ChatId == message.ChatId).Find(i => i.Id == message.Id).IsActive = false;
-        
+
         public List<Message> GetAll() => _messages.FindAll(i => i.IsActive);
 
         public void SaveToDb(string source) => SaveToFile(this, source);
 
         public void GetFromDb(string source) => _messages = GetFromFile(source).GetAll();
-        
+
         protected override void Write(BinaryWriter writer, MessageFileRepository item)
         {
             foreach (var message in item.GetAll())
@@ -56,7 +57,7 @@ namespace Chat.Repositories
                     IsViewed = reader.ReadBoolean(),
                     IsActive = reader.ReadBoolean()
                 };
-                
+
                 if (!string.IsNullOrEmpty(message.Text))
                 {
                     messages.Add(message);
@@ -67,5 +68,6 @@ namespace Chat.Repositories
         }
 
         public List<Message> GetChatMessages(Chat chat) => _messages.FindAll(i => i.IsActive).FindAll(i => i.ChatId == chat.Id);
+        public bool IsChatNotEmpty(Chat chat) => _messages.Select(i => i.ChatId).Contains(chat.Id);
     }
 }

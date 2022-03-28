@@ -1,8 +1,7 @@
+using Chat.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Chat.Repositories;
-using Chat.UI;
 
 namespace Chat.Utils
 {
@@ -47,11 +46,20 @@ namespace Chat.Utils
         public User SignUp(IUserRepository users)
         {
             Console.WriteLine("Let's create an account");
-
             Console.WriteLine("Enter your userName");
             var username = Console.ReadLine();
 
-            var userId = users.GetAll().Last().Id++;
+            if (users.GetAll().FindAll(i => i.Name == username).Count > 0)
+            {
+                Console.WriteLine("User with this nickname already exists");
+                SignUp(users);
+            }
+            int userId = 1;
+            if (users.GetAll().Count > 0)
+            {
+                userId = users.GetAll().Last().Id++;
+            }
+
             return new User()
             {
                 Id = userId,
@@ -67,153 +75,166 @@ namespace Chat.Utils
             Console.WriteLine($"-----Chat {chat.Name}-----");
             if (messages.Count > 0)
             {
-               
+
                 foreach (var message in messages)
                 {
                     var user = users.Find(i => i.Id == message.UserId);
-                    if(user !=null)
-                     {
-                            Console.WriteLine(user.Name);
+                    if (user != null)
+                    {
+                        Console.WriteLine(user.Name);
                     }
-                     
+
                     Console.WriteLine(message.Text + " " + message.Time);
                 }
             }
             else
             {
                 Console.WriteLine("Haven't got any messages in this chat yet");
-                Console.WriteLine("Enter add-mes to add message");
             }
         }
 
-    
 
-    public string GetChatNameToOpen()
-    {
-        Console.WriteLine("Enter name of chat to open");
-        return Console.ReadLine();
-    }
 
-    public void IncorrectUserName()
-    {
-        Console.WriteLine("This user does not exist");
-        Console.WriteLine("Pass registration");
-    }
-
-    public Chat CreateChat(IUserRepository users, IChatRepository chats)
-    {
-        Console.WriteLine("Enter your username:");
-        var username = Console.ReadLine();
-        Console.WriteLine("Enter chat name:");
-        var chatName = Console.ReadLine();
-        Console.WriteLine("Enter user who you join the chat");
-        var companionUsername = Console.ReadLine();
-        int chatId = 0;
-        if (chats.GetAll().Count() > 0)
+        public string GetChatNameToOpen()
         {
-            chatId = chats.GetAll().Last().Id++;
+            Console.WriteLine("Enter name of chat to open");
+            return Console.ReadLine();
         }
 
-        var userIds = new List<int>();
-        userIds.Add(users.Get(username).Id);
-        userIds.Add(users.Get(companionUsername).Id);
-        users.Get(username).ChatIds.Add(chatId);
-        users.Get(companionUsername).ChatIds.Add(chatId);
-        Console.WriteLine($"Chat with name - {chatName} is created");
-        Console.WriteLine("Enter open-chat to open, delete-chat to delete");
-        return new Chat()
+        public void IncorrectUserName()
         {
-            Id = chatId,
-            IsActive = true,
-            Name = chatName,
-            UserIds = userIds
-        };
-    }
-
-    public void ShowFitstChatCreate()
-    {
-        Console.WriteLine("You have not got any chats, let's create");
-        Console.WriteLine("Enter create-chat");
-    }
-
-    public void SuccessSignUp()
-    {
-        Console.WriteLine("You have successfully signed up");
-        Console.WriteLine("Enter signIn to log into your account");
-    }
-
-
-
-    public Message AddMessage(IMessageRepository messages, IChatRepository chats, IUserRepository users)
-    {
-        Console.WriteLine("Enter your userName");
-        var user = users.Get(Console.ReadLine());
-        Console.WriteLine("Enter chat name");
-        var chat = chats.GetAll().Find(i => i.Name == Console.ReadLine());
-        Console.WriteLine("Enter text of message");
-        var messageText = Console.ReadLine();
-        var chatMessages = messages.GetChatMessages(chat);
-        int id = 0; ;
-        if (chatMessages.Count() > 0)
-        {
-            id = chatMessages.Last().Id++;
+            Console.WriteLine("This user does not exist");
+            Console.WriteLine("Pass registration");
         }
 
-        return new Message()
+        public Chat CreateChat(IUserRepository users, IChatRepository chats)
         {
-            Id = id,
-            Text = messageText,
-            IsActive = true,
-            IsViewed = false,
-            Time = DateTime.Now,
-            ChatId = chat.Id,
-            UserId = user.Id
-        };
-    }
-
-    public string ChatActions()
-    {
-        Console.WriteLine("Enter add-mess to add message or del-mes to delete message or enter read-mes to read messages in chat");
-        return Console.ReadLine();
-    }
-
-    public void ReadMessage(IChatRepository chats, IMessageRepository messages)
-    {
-        Console.WriteLine("Enter chat name in which read messages");
-        var chat = chats.GetAll().Find(i => i.Name == Console.ReadLine());
-        messages.GetAll().FindAll(i => i.ChatId == chat.Id).ForEach(i => i.IsViewed = true);
-        Console.WriteLine("Messages were read");
-    }
-
-    public void DeleteMessage(IChatRepository chats, IMessageRepository messages)
-    {
-        Console.WriteLine("Enter chat name in which delete message");
-        var chat = chats.GetAll().Find(i => i.Name == Console.ReadLine());
-        Console.WriteLine("Enter text of message to delete");
-        var message = messages.GetAll().FindAll(i => i.ChatId == chat.Id).Find(i => i.Text == Console.ReadLine());
-        if (message != null)
-        {
-            if (message.Time.AddDays(1) >= DateTime.Now)
+            Console.WriteLine("Enter your username:");
+            var username = Console.ReadLine();
+            if (users.GetAll().FindAll(i => i.Name == username).Count < 1)
             {
-                messages.Delete(message);
-                Console.WriteLine("Message was deleted");
+                Console.WriteLine("Have not got this user");
+                CreateChat(users, chats);
+            }
+            Console.WriteLine("Enter chat name:");
+            var chatName = Console.ReadLine();
+            if (chats.GetAll().FindAll(i => i.Name == chatName).Count > 0)
+            {
+                Console.WriteLine("Have got chat with this name");
+                CreateChat(users, chats);
+            }
+            Console.WriteLine("Enter user who you join the chat");
+            var companionUsername = Console.ReadLine();
+            if (users.GetAll().FindAll(i => i.Name == companionUsername).Count < 1)
+            {
+                Console.WriteLine("Have not got this user");
+                CreateChat(users, chats);
+            }
+
+            int chatId = 1;
+            if (chats.GetAll().Count() > 0)
+            {
+                chatId = chats.GetAll().Last().Id++;
+            }
+
+            var userIds = new List<int>();
+            userIds.Add(users.Get(username).Id);
+            userIds.Add(users.Get(companionUsername).Id);
+            users.Get(username).ChatIds.Add(chatId);
+            users.Get(companionUsername).ChatIds.Add(chatId);
+            Console.WriteLine($"Chat with name - {chatName} is created");
+            Console.WriteLine("Enter open-chat to open, delete-chat to delete");
+            return new Chat()
+            {
+                Id = chatId,
+                IsActive = true,
+                Name = chatName,
+                UserIds = userIds
+            };
+        }
+
+        public void ShowFitstChatCreate()
+        {
+            Console.WriteLine("You have not got any chats, let's create");
+            Console.WriteLine("Enter create-chat");
+        }
+
+        public void SuccessSignUp()
+        {
+            Console.WriteLine("You have successfully signed up");
+            Console.WriteLine("Enter signIn to log into your account");
+        }
+
+        public Message AddMessage(IMessageRepository messages, IChatRepository chats, IUserRepository users)
+        {
+            Console.WriteLine("Enter your userName");
+            var user = users.Get(Console.ReadLine());
+            Console.WriteLine("Enter chat name");
+            var chat = chats.GetAll().Find(i => i.Name == Console.ReadLine());
+            Console.WriteLine("Enter text of message");
+            var messageText = Console.ReadLine();
+            var chatMessages = messages.GetChatMessages(chat);
+            int id = 1; ;
+            if (chatMessages.Count() > 0)
+            {
+                id = chatMessages.Last().Id++;
+            }
+
+            Console.WriteLine("Message was add");
+            return new Message()
+            {
+                Id = id,
+                Text = messageText,
+                IsActive = true,
+                IsViewed = false,
+                Time = DateTime.Now,
+                ChatId = chat.Id,
+                UserId = user.Id
+            };
+        }
+
+        public void ChatActions()
+        {
+            Console.WriteLine("Enter add-mess to add message or del-mes to delete message or enter read-mes to read messages in chat");
+        }
+
+        public void ReadMessage(IChatRepository chats, IMessageRepository messages)
+        {
+            Console.WriteLine("Enter chat name in which read messages");
+            var chat = chats.GetAll().Find(i => i.Name == Console.ReadLine());
+            messages.GetAll().FindAll(i => i.ChatId == chat.Id).ForEach(i => i.IsViewed = true);
+            Console.WriteLine("Messages were read");
+        }
+
+        public void DeleteMessage(IChatRepository chats, IMessageRepository messages)
+        {
+            Console.WriteLine("Enter chat name in which delete message");
+            var chat = chats.GetAll().Find(i => i.Name == Console.ReadLine());
+            Console.WriteLine("Enter text of message to delete");
+            var message = messages.GetAll().FindAll(i => i.ChatId == chat.Id).Find(i => i.Text == Console.ReadLine());
+            if (message != null)
+            {
+                if (message.Time.AddDays(1) >= DateTime.Now)
+                {
+                    messages.Delete(message);
+                    Console.WriteLine("Message was deleted");
+                }
+                else
+                {
+                    Console.WriteLine("Wasn't deleted, too old");
+                }
             }
             else
             {
-                Console.WriteLine("Wasn't deleted, too old");
+                Console.WriteLine("Haven't got this message");
             }
         }
-        else
+
+        public void DeleteChat(IChatRepository chats)
         {
-            Console.WriteLine("Haven't got this message");
+            Console.WriteLine("Enter chat name to delete");
+            chats.Delete(chats.GetAll().Find(i => i.Name == Console.ReadLine()));
+            Console.WriteLine("Chat was deleted");
         }
     }
-
-    public void DeleteChat(IChatRepository chats)
-    {
-        Console.WriteLine("Enter chat name to delete");
-        chats.Delete(chats.GetAll().Find(i => i.Name == Console.ReadLine()));
-        Console.WriteLine("Chat was deleted");
-    }
-}
 }

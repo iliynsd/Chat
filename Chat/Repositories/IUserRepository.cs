@@ -8,6 +8,9 @@ namespace Chat.Repositories
         public void Delete(User user);
         public User Get(string userName);
         public List<User> GetAll();
+        public bool IsUserExist(string username);
+
+        public bool UserHasChats(string userName);
         public void SaveToDb(string source);
         public void GetFromDb(string source);
     }

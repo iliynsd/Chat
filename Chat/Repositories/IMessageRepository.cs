@@ -11,5 +11,6 @@ namespace Chat.Repositories
         public void GetFromDb(string source);
 
         public List<Message> GetChatMessages(Chat chat);
+        public bool IsChatNotEmpty(Chat chat);
     }
 }
