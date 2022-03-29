@@ -1,5 +1,8 @@
-﻿using Chat.Repositories;
+﻿using Chat.Dal;
+using Chat.Repositories;
+using Chat.Repositories.PostgresRepositories;
 using Chat.Utils;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -27,14 +30,21 @@ namespace Chat
 
             serviceCollection.AddSingleton<Messenger>();
             serviceCollection.AddSingleton<IMenu, ConsoleMenu>();
-            serviceCollection.AddSingleton<IMessageRepository, MessageFileRepository>();
-            serviceCollection.AddSingleton<IChatRepository, ChatFileRepository>();
-            serviceCollection.AddSingleton<IUserRepository, UserFileRepository>();
-            serviceCollection.AddSingleton<IChatActionsRepository, ChatActionsFileRepository>();
+           // serviceCollection.AddSingleton<IMessageRepository, MessageFileRepository>();
+           // serviceCollection.AddSingleton<IChatRepository, ChatFileRepository>();
+           // serviceCollection.AddSingleton<IUserRepository, UserFileRepository>();
+            //serviceCollection.AddSingleton<IChatActionsRepository, ChatActionsFileRepository>();
+            serviceCollection.AddTransient<IMessageRepository, PostgresMessageRepository>();
+            serviceCollection.AddTransient<IChatRepository, PostgresChatRepository>();
+            serviceCollection.AddTransient<IUserRepository, PostgresUserRepository>();
+            serviceCollection.AddTransient<IChatActionsRepository, PostgresChatActionsRepository>();
+            serviceCollection.AddEntityFrameworkNpgsql().AddDbContext<DataContext>(options => options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
 
+            
 
             var serviceProvider = serviceCollection.BuildServiceProvider();
 
+           
 
             await serviceProvider.GetRequiredService<App>().Run(serviceProvider);
         }
