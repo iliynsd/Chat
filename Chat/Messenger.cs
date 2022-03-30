@@ -1,12 +1,15 @@
 using Chat.Repositories;
 using Chat.Utils;
+using Microsoft.Extensions.Hosting;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Chat
 {
-    public class Messenger
+    public class Messenger : IHostedService
     {
         private Dictionary<string, Action> _functional;
         private IMenu _menu;
@@ -136,5 +139,15 @@ namespace Chat
         private List<Chat> GetChats(string username) => _chats.GetAll().FindAll(i => i.UserIds.Contains(_users.Get(username).Id));
 
         private User GetAuthorOfLastMessage(Message lastMessage) => _users.GetAll().Find(i => lastMessage.UserId == i.Id);
+
+        public async Task StartAsync(CancellationToken cancellationToken)
+        {
+            Start();
+        }
+
+        public async Task StopAsync(CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
