@@ -6,8 +6,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using System;
-using System.IO;
 using System.Threading.Tasks;
 
 namespace Chat
@@ -17,22 +15,20 @@ namespace Chat
     {
         static async Task Main(string[] args)
         {
+            CreateHostBuilder(args).Build().Services.GetRequiredService<Messenger>().Start();
+        }
 
-            var serviceCollection = new ServiceCollection();
-            IConfiguration configuration = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetParent(AppContext.BaseDirectory).FullName).AddJsonFile("appSettings.json", optional: false).AddEnvironmentVariables()
-                .Build();
-
-            Host.CreateDefaultBuilder(args).ConfigureServices(serviceCollection =>
-                       {
-
-                           serviceCollection.Configure<Options>(configuration.GetSection(Options.Path).Bind);
+        public static IHostBuilder CreateHostBuilder(string[] args)
+        {
+            return Host.CreateDefaultBuilder(args)
+                .ConfigureServices((hostContext, serviceCollection) => {
+                    serviceCollection.Configure<Options>(hostContext.Configuration.GetSection(Options.Path).Bind);
 
                            serviceCollection.AddTransient<App>();
-                           serviceCollection.AddSingleton(configuration);
+                           serviceCollection.AddSingleton(hostContext.Configuration);
                            serviceCollection.AddSingleton<Configuration>();
                           
-                           serviceCollection.AddDbContext<DataContext>(options => options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
+                           serviceCollection.AddDbContext<DataContext>(options => options.UseNpgsql(hostContext.Configuration.GetConnectionString("DefaultConnection")));
                            serviceCollection.AddSingleton<Messenger>();
                            serviceCollection.AddSingleton<IMenu, ConsoleMenu>();
                            serviceCollection.AddTransient<IMessageRepository, PostgresMessageRepository>();
@@ -41,8 +37,7 @@ namespace Chat
                            serviceCollection.AddTransient<IChatActionsRepository, PostgresChatActionsRepository>();
 
                            serviceCollection.AddHostedService<Messenger>();
-
-                       }).Build().Services.GetRequiredService<Messenger>().Start();
+                });
         }
     }
 }
