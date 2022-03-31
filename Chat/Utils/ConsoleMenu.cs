@@ -43,28 +43,21 @@ namespace Chat.Utils
             Console.WriteLine("You are sign out");
         }
 
-        public User SignUp(IUserRepository users)
+        public User SignUp(List<User> users)
         {
             Console.WriteLine("Let's create an account");
             Console.WriteLine("Enter your userName");
             var username = Console.ReadLine();
 
-            if (users.GetAll().FindAll(i => i.Name == username).Count > 0)
+            if (users.FindAll(i => i.Name == username).Count > 0)
             {
                 Console.WriteLine("User with this nickname already exists");
                 SignUp(users);
             }
-            int userId = 1;
-            if (users.GetAll().Count > 0)
-            {
-                userId = users.GetAll().Last().Id++;
-            }
-
+            
             return new User()
             {
-                Id = userId,
                 Name = username,
-                ChatIds = new List<int>(),
                 IsActive = true,
                 Type = Type.User.ToString()
             };
@@ -131,25 +124,18 @@ namespace Chat.Utils
                 CreateChat(users, chats);
             }
 
-            int chatId = 1;
-            if (chats.GetAll().Count() > 0)
-            {
-                chatId = chats.GetAll().Last().Id++;
-            }
+           
 
-            var userIds = new List<int>();
-            userIds.Add(users.Get(username).Id);
-            userIds.Add(users.Get(companionUsername).Id);
-            users.Get(username).ChatIds.Add(chatId);
-            users.Get(companionUsername).ChatIds.Add(chatId);
+            var chatUsers = new List<User>();
+            chatUsers.Add(users.Get(username));
+            chatUsers.Add(users.Get(companionUsername));
             Console.WriteLine($"Chat with name - {chatName} is created");
             Console.WriteLine("Enter open-chat to open, delete-chat to delete");
             return new Chat()
             {
-                Id = chatId,
                 IsActive = true,
                 Name = chatName,
-                UserIds = userIds
+                Users = chatUsers
             };
         }
 
@@ -174,16 +160,11 @@ namespace Chat.Utils
             Console.WriteLine("Enter text of message");
             var messageText = Console.ReadLine();
             var chatMessages = messages.GetChatMessages(chat);
-            int id = 1; ;
-            if (chatMessages.Count() > 0)
-            {
-                id = chatMessages.Last().Id++;
-            }
-
+           
             Console.WriteLine("Message was add");
+
             return new Message()
             {
-                Id = id,
                 Text = messageText,
                 IsActive = true,
                 IsViewed = false,

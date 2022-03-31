@@ -17,7 +17,7 @@ namespace Chat.Utils
 
         public void SignOut();
 
-        public User SignUp(IUserRepository users);
+        public User SignUp(List<User> users);
 
         public void OpenChat(Chat chat, List<Message> messages, List<User> user);
 

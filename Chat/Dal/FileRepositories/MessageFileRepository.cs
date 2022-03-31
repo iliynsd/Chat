@@ -16,7 +16,16 @@ namespace Chat.Repositories
             _options = options.Value;
         }
 
-        public void Add(Message message) => _messages.Add(message);
+        public void Add(Message message)
+        {
+            message.Id = 1;
+            if (_messages.Count() > 0)
+            {
+                message.Id = _messages.Last().Id++;
+            }
+
+            _messages.Add(message);
+        } 
 
         public void Delete(Message message) => _messages.FindAll(i => i.ChatId == message.ChatId).Find(i => i.Id == message.Id).IsActive = false;
 

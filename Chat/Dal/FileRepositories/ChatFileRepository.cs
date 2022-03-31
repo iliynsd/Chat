@@ -16,7 +16,16 @@ namespace Chat.Repositories
             _options = options.Value;
         }
 
-        public void Add(Chat chat) => _chats.Add(chat);
+        public void Add(Chat chat)
+        {
+            chat.Id = 1;
+            if (_chats.Count() > 0)
+            {
+                chat.Id = _chats.Last().Id++;
+            }
+
+            _chats.Add(chat);
+        } 
 
         public void Delete(Chat chat) => _chats.Find(i => i.Id == chat.Id).IsActive = false;
 
@@ -34,13 +43,20 @@ namespace Chat.Repositories
                 {
                     writer.Write(chat.Id);
                     writer.Write(chat.Name);
-                    string userIds = String.Empty;
-                    foreach (var id in chat.UserIds)
+                    string users = String.Empty;//TODO save in file list of users 
+                    foreach (var user in chat.Users)
                     {
-                        userIds += id;
-                        userIds += ';';
+                        users += user.Id;
+                        users += ';';
+                        users += user.IsActive;
+                        users += ';';
+                        users += user.Name;
+                        users += ';';
+                        users += user.Type;
+                        users += ';';
+                        writer.Write(users);
                     }
-                    writer.Write(userIds);
+                    
                     writer.Write(chat.IsActive);
                 }
             }
@@ -54,9 +70,10 @@ namespace Chat.Repositories
 
                 var id = reader.ReadInt32();
                 var name = reader.ReadString();
-                var userIdsMas = reader.ReadString().Split(';').ToList();
-                userIdsMas.Remove(userIdsMas.Last());
-                var userIds = userIdsMas.Select(i => int.Parse(i)).ToList();
+                var usersMas = reader.ReadString().Split(';').ToList();
+                usersMas.Remove(usersMas.Last());
+                var users = new List<User>();
+                //TODO read list users from file
                 var isActive = reader.ReadBoolean();
 
                 if (!string.IsNullOrEmpty(name))
@@ -65,7 +82,7 @@ namespace Chat.Repositories
                     {
                         Id = id,
                         Name = name,
-                        UserIds = userIds,
+                        Users = users,
                         IsActive = isActive
                     });
                 }

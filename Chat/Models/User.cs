@@ -1,3 +1,5 @@
+
+
 using System.Collections.Generic;
 
 namespace Chat
@@ -6,9 +8,13 @@ namespace Chat
     {
         public int Id { get; set; }
         public string Type { get; set; }
-
-        public List<int> ChatIds { get; set; }
+        public virtual ICollection<Chat> Chats { get; set; }
         public string Name { get; set; }
         public bool IsActive { get; set; }
+
+        public User()
+        {
+            Chats = new List<Chat>();
+        }
     }
 }

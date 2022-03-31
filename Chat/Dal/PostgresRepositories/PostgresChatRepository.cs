@@ -15,11 +15,11 @@ namespace Chat.Repositories.PostgresRepositories
 
         public void Add(Chat chat) => _dataContext.Chats.Add(chat);
 
-        public void Delete(Chat chat) => _dataContext.Chats.Find(chat).IsActive = false;
+        public void Delete(Chat chat) => _dataContext.Chats.FirstOrDefault(i => i.Id == chat.Id).IsActive = false;
 
         public List<Chat> GetAll() => _dataContext.Chats.ToList();
 
-        public Chat GetChat(string chatName) => _dataContext.Chats.Find(chatName);
+        public Chat GetChat(string chatName) => _dataContext.Chats.FirstOrDefault(i => i.Name == chatName);
 
         public void GetFromDb()
         { }
