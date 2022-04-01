@@ -12,6 +12,5 @@ namespace Chat.Repositories
 
         public bool UserHasChats(string userName);
         public void SaveToDb();
-        public void GetFromDb();
     }
 }

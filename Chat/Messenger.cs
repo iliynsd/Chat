@@ -1,9 +1,6 @@
-using Chat.Dal;
 using Chat.Repositories;
 using Chat.Utils;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
@@ -33,7 +30,6 @@ namespace Chat
                 {"open-chat", OpenChat},
                 {"add-mes", AddMessage},
                 {"del-mes", DeleteMessage},
-               
                 {"exit-chat", ExitChat},
                 {"bot", BotInvoke}
             };
@@ -60,6 +56,7 @@ namespace Chat
                 users.Add(user3);
                 users.Add(user4);
                 users.SaveToDb();
+
                 chats.Add(new Chat() { Name = "chat4", IsActive = true, Users = new List<User>() { user1, user2, user3 } });
                 chats.Add(new Chat() { Name = "chat5", IsActive = true, Users = new List<User>() { user3, user2, user4 } });
                 chats.Add(new Chat() { Name = "chat6", IsActive = true, Users = new List<User>() { user1, user2, user4 } });
@@ -127,6 +124,7 @@ namespace Chat
             using (var scope = _serviceProvider.CreateScope())
             {
                 var users = scope.ServiceProvider.GetRequiredService<IUserRepository>();
+
                 users.Add(_menu.SignUp(users.GetAll()));
                 users.SaveToDb();
                 _menu.SuccessSignUp();
@@ -221,9 +219,6 @@ namespace Chat
                 var chats = scope.ServiceProvider.GetRequiredService<IChatRepository>();
                 var users = scope.ServiceProvider.GetRequiredService<IUserRepository>();
                 var messages = scope.ServiceProvider.GetRequiredService<IMessageRepository>();
-                users.GetFromDb();
-                chats.GetFromDb();
-                messages.GetFromDb();
             }
             var cmd = Console.ReadLine();
             while (cmd != "exit")

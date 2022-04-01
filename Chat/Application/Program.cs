@@ -6,8 +6,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using System;
 
 namespace Chat
 {
@@ -24,8 +22,6 @@ namespace Chat
             return Host.CreateDefaultBuilder(args)
                 .ConfigureServices((hostContext, serviceCollection) =>
                 {
-
-                    serviceCollection.Configure<Options>(hostContext.Configuration.GetSection(Options.Path).Bind);
 
                     serviceCollection.AddDbContext<DataContext>(options =>
                         options.UseLazyLoadingProxies().UseNpgsql(hostContext.Configuration.GetConnectionString("DefaultConnection")));

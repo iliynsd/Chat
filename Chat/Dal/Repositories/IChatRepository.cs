@@ -8,8 +8,7 @@ namespace Chat.Repositories
         public void Delete(Chat chat);
         public List<Chat> GetAll();
         public void SaveToDb();
-        public void GetFromDb();
-
+       
         public Chat GetChat(string chatName);
     }
 }

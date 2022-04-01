@@ -1,6 +1,11 @@
-﻿namespace Chat.Repositories.PostgresRepositories
+﻿using Chat.Dal;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace Chat.Repositories.PostgresRepositories
 {
-    /* public class PostgresChatActionsRepository : IChatActionsRepository
+     public class PostgresChatActionsRepository : IChatActionsRepository
      {
          private DataContext _dataContext;
 
@@ -9,13 +14,13 @@
              _dataContext = dataContext;
          }
 
-         public void Add(string action) => _dataContext.ChatActions.Add(action);
+         public void Add(Action action) => _dataContext.ChatActions.Add(action);
 
-         public List<string> Get() => _dataContext.ChatActions.ToList();
+         public List<Action> Get() => _dataContext.ChatActions.ToList();
 
          public void GetFromDb()
          { }
 
          public void SaveToDb() => _dataContext.SaveChanges();
-     }*/
+     }
 }
