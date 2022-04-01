@@ -6,6 +6,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using System;
 
 namespace Chat
 {
@@ -26,7 +28,7 @@ namespace Chat
                     serviceCollection.Configure<Options>(hostContext.Configuration.GetSection(Options.Path).Bind);
 
                     serviceCollection.AddDbContext<DataContext>(options =>
-                        options.UseNpgsql(hostContext.Configuration.GetConnectionString("DefaultConnection")));
+                        options.UseLazyLoadingProxies().UseNpgsql(hostContext.Configuration.GetConnectionString("DefaultConnection")));
 
                     serviceCollection.AddSingleton<IMenu, ConsoleMenu>();
                     //serviceCollection.AddSingleton<IMessageRepository, MessageFileRepository>();
@@ -36,7 +38,7 @@ namespace Chat
                     serviceCollection.AddTransient<IMessageRepository, PostgresMessageRepository>();
                     serviceCollection.AddTransient<IChatRepository, PostgresChatRepository>();
                     serviceCollection.AddTransient<IUserRepository, PostgresUserRepository>();
-                    
+
                     serviceCollection.AddHostedService<Messenger>();
                     // serviceCollection.AddTransient<IChatActionsRepository, PostgresChatActionsRepository>();
                 });

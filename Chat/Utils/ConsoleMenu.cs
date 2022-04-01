@@ -1,7 +1,6 @@
 using Chat.Repositories;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Chat.Utils
 {
@@ -54,7 +53,7 @@ namespace Chat.Utils
                 Console.WriteLine("User with this nickname already exists");
                 SignUp(users);
             }
-            
+
             return new User()
             {
                 Name = username,
@@ -72,10 +71,12 @@ namespace Chat.Utils
                 foreach (var message in messages)
                 {
                     var user = users.Find(i => i.Id == message.UserId);
+                   
                     if (user != null)
                     {
                         Console.WriteLine(user.Name);
                     }
+                    
 
                     Console.WriteLine(message.Text + " " + message.Time);
                 }
@@ -124,7 +125,7 @@ namespace Chat.Utils
                 CreateChat(users, chats);
             }
 
-           
+
 
             var chatUsers = new List<User>();
             chatUsers.Add(users.Get(username));
@@ -160,7 +161,7 @@ namespace Chat.Utils
             Console.WriteLine("Enter text of message");
             var messageText = Console.ReadLine();
             var chatMessages = messages.GetChatMessages(chat);
-           
+
             Console.WriteLine("Message was add");
 
             return new Message()

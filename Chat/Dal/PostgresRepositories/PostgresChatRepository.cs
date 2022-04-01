@@ -1,4 +1,5 @@
 ﻿using Chat.Dal;
+using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
 

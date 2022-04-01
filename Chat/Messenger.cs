@@ -3,6 +3,7 @@ using Chat.Repositories;
 using Chat.Utils;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
@@ -24,6 +25,7 @@ namespace Chat
             _functional = new Dictionary<string, Action>()
             {
                 {"signIn", SignIn},
+                {"try", Try},
                 {"signUp", SignUp},
                 {"signOut", SignOut},
                 {"create-chat", CreateChat},
@@ -31,13 +33,53 @@ namespace Chat
                 {"open-chat", OpenChat},
                 {"add-mes", AddMessage},
                 {"del-mes", DeleteMessage},
+               
                 {"exit-chat", ExitChat},
                 {"bot", BotInvoke}
             };
 
             _menu = menu;
             _serviceProvider = serviceProvider;
+           
         }
+
+
+        private void Try()
+        {
+            using (var scope = _serviceProvider.CreateScope())
+            {
+                var users = scope.ServiceProvider.GetRequiredService<IUserRepository>();
+                var messages = scope.ServiceProvider.GetRequiredService<IMessageRepository>();
+                var chats = scope.ServiceProvider.GetRequiredService<IChatRepository>();
+                var user1 = new User() { Type = "Bot", Name = "tryuser5", IsActive = true };
+                var user2 = new User() { Type = "Bot", Name = "tryuser6", IsActive = true };
+                var user3 = new User() { Type = "Bot", Name = "tryuser7", IsActive = true };
+                var user4 = new User() { Type = "Bot", Name = "tryuser8", IsActive = true };
+                users.Add(user1);
+                users.Add(user2);
+                users.Add(user3);
+                users.Add(user4);
+                users.SaveToDb();
+                chats.Add(new Chat() { Name = "chat4", IsActive = true, Users = new List<User>() { user1, user2, user3 } });
+                chats.Add(new Chat() { Name = "chat5", IsActive = true, Users = new List<User>() { user3, user2, user4 } });
+                chats.Add(new Chat() { Name = "chat6", IsActive = true, Users = new List<User>() { user1, user2, user4 } });
+
+                chats.SaveToDb();
+
+                messages.Add(new Message() { Text = "textuser1", ChatId = 3, UserId = 1, IsActive = true, IsViewed = false, Time = DateTime.Now });
+                messages.Add(new Message() { Text = "textuser2", ChatId = 3, UserId = 2, IsActive = true, IsViewed = false, Time = DateTime.Now });
+                messages.Add(new Message() { Text = "textuser3", ChatId = 3, UserId = 3, IsActive = true, IsViewed = false, Time = DateTime.Now });
+                messages.Add(new Message() { Text = "textuser4", ChatId = 3, UserId = 4, IsActive = true, IsViewed = false, Time = DateTime.Now });
+                messages.Add(new Message() { Text = "textuser1", ChatId = 4, UserId = 1, IsActive = true, IsViewed = false, Time = DateTime.Now });
+                messages.Add(new Message() { Text = "textuser2", ChatId = 4, UserId = 2, IsActive = true, IsViewed = false, Time = DateTime.Now });
+                messages.Add(new Message() { Text = "textuser6", ChatId = 4, UserId = 6, IsActive = true, IsViewed = false, Time = DateTime.Now });
+                messages.Add(new Message() { Text = "textuser7", ChatId = 4, UserId = 7, IsActive = true, IsViewed = false, Time = DateTime.Now });
+                messages.SaveToDb();
+
+            }
+
+        }
+
 
         private void SignIn()
         {
@@ -46,6 +88,7 @@ namespace Chat
                 var users = scope.ServiceProvider.GetRequiredService<IUserRepository>();
                 var messages = scope.ServiceProvider.GetRequiredService<IMessageRepository>();
                 var chats = scope.ServiceProvider.GetRequiredService<IChatRepository>();
+
                 var username = _menu.SignIn();
 
                 if (users.IsUserExist(username))
@@ -84,9 +127,9 @@ namespace Chat
             using (var scope = _serviceProvider.CreateScope())
             {
                 var users = scope.ServiceProvider.GetRequiredService<IUserRepository>();
-                users.Add( _menu.SignUp(users.GetAll()));
+                users.Add(_menu.SignUp(users.GetAll()));
                 users.SaveToDb();
-               _menu.SuccessSignUp();
+                _menu.SuccessSignUp();
             }
         }
 
@@ -103,7 +146,11 @@ namespace Chat
                 var users = scope.ServiceProvider.GetRequiredService<IUserRepository>();
                 var messages = scope.ServiceProvider.GetRequiredService<IMessageRepository>();
                 var chats = scope.ServiceProvider.GetRequiredService<IChatRepository>();
-                messages.Add(_menu.AddMessage(messages, chats, users));
+                //var bots = null;
+                //TODO create botmanager
+                var message = _menu.AddMessage(messages, chats, users);
+
+                messages.Add(message);
                 messages.SaveToDb();
                 chats.SaveToDb();
                 users.SaveToDb();
@@ -149,6 +196,7 @@ namespace Chat
             }
         }
 
+
         private void ExitChat() { }
 
         private void BotInvoke() { }
@@ -161,7 +209,7 @@ namespace Chat
                 var users = scope.ServiceProvider.GetRequiredService<IUserRepository>();
                 chats.Add(_menu.CreateChat(users, chats));
                 chats.SaveToDb();
-                users.SaveToDb(); 
+                users.SaveToDb();
             }
         }
 
@@ -177,20 +225,20 @@ namespace Chat
                 chats.GetFromDb();
                 messages.GetFromDb();
             }
-                var cmd = Console.ReadLine();
-                while (cmd != "exit")
+            var cmd = Console.ReadLine();
+            while (cmd != "exit")
+            {
+                if (_functional.ContainsKey(cmd))
                 {
-                    if (_functional.ContainsKey(cmd))
-                    {
-                        _functional[cmd]?.Invoke();
-                    }
-                    else
-                    {
-                        _menu.InvalidOperation();
-                    }
-
-                    cmd = Console.ReadLine();
+                    _functional[cmd]?.Invoke();
                 }
+                else
+                {
+                    _menu.InvalidOperation();
+                }
+
+                cmd = Console.ReadLine();
+            }
         }
 
         public async Task StartAsync(CancellationToken cancellationToken)

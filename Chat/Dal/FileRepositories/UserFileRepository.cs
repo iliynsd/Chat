@@ -50,7 +50,7 @@ namespace Chat.Repositories
                     writer.Write(user.Id);
                     writer.Write(user.Type);
                     string chatIds = string.Empty;
-                    /*if (user.ChatIds.Count < 1)
+                    if (user.Chats.Count < 1)
                     {
                         writer.Write("0;");
                     }
@@ -86,17 +86,17 @@ namespace Chat.Repositories
                 var name = reader.ReadString();
                 var isActive = reader.ReadBoolean();
 
-               /* if (!string.IsNullOrEmpty(name))
-                {
-                    users.Add(new User()
-                    {
-                        Id = id,
-                        Type = type,
-                        Name = name,
-                        IsActive = isActive,
-                        ChatIds = chatIds
-                    });
-                }*/
+                /* if (!string.IsNullOrEmpty(name))
+                 {
+                     users.Add(new User()
+                     {
+                         Id = id,
+                         Type = type,
+                         Name = name,
+                         IsActive = isActive,
+                         ChatIds = chatIds
+                     });
+                 }*/
             }
 
             return users;

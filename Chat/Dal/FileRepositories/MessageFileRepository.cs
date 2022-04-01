@@ -25,7 +25,7 @@ namespace Chat.Repositories
             }
 
             _messages.Add(message);
-        } 
+        }
 
         public void Delete(Message message) => _messages.FindAll(i => i.ChatId == message.ChatId).Find(i => i.Id == message.Id).IsActive = false;
 

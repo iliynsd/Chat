@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.Linq;
 
 namespace Chat.Dal
 {
@@ -11,7 +12,7 @@ namespace Chat.Dal
 
         public DataContext(DbContextOptions<DataContext> options) : base(options)
         {
-
+           
         }
     }
 }
