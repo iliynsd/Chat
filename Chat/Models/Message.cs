@@ -12,5 +12,7 @@ namespace Chat
         public DateTime Time { get; set; }
         public bool IsViewed { get; set; }
         public bool IsActive { get; set; }
+
+        public Message() { }
     }
 }

@@ -27,16 +27,13 @@ namespace Chat
                         options.UseLazyLoadingProxies().UseNpgsql(hostContext.Configuration.GetConnectionString("DefaultConnection")));
 
                     serviceCollection.AddSingleton<IMenu, ConsoleMenu>();
-                    //serviceCollection.AddSingleton<IMessageRepository, MessageFileRepository>();
-                    //serviceCollection.AddSingleton<IChatRepository, ChatFileRepository>();
-                    //serviceCollection.AddSingleton<IUserRepository, UserFileRepository>();
-
                     serviceCollection.AddTransient<IMessageRepository, PostgresMessageRepository>();
                     serviceCollection.AddTransient<IChatRepository, PostgresChatRepository>();
                     serviceCollection.AddTransient<IUserRepository, PostgresUserRepository>();
+                    serviceCollection.AddTransient<IChatActionsRepository, PostgresChatActionsRepository>();
 
                     serviceCollection.AddHostedService<Messenger>();
-                    // serviceCollection.AddTransient<IChatActionsRepository, PostgresChatActionsRepository>();
+
                 });
         }
     }

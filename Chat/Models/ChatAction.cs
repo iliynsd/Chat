@@ -2,10 +2,10 @@
 
 namespace Chat.Models
 {
-    public class Action
+    public class ChatAction
     {
         public int Id { get; set; }
-        public int UserId { get; set; }
+
         public DateTime Time { get; set; }
         public string ActionText { get; set; }
     }

@@ -1,5 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System;
+﻿using Chat.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace Chat.Dal
 {
@@ -8,11 +8,11 @@ namespace Chat.Dal
         public DbSet<User> Users { get; set; }
         public DbSet<Message> Messages { get; set; }
         public DbSet<Chat> Chats { get; set; }
-        public DbSet<Action> ChatActions { get; set; }
+        public DbSet<ChatAction> ChatActions { get; set; }
 
         public DataContext(DbContextOptions<DataContext> options) : base(options)
         {
-           
+
         }
     }
 }

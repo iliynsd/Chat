@@ -1,26 +1,25 @@
 ﻿using Chat.Dal;
-using System;
+using Chat.Models;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace Chat.Repositories.PostgresRepositories
 {
-     public class PostgresChatActionsRepository : IChatActionsRepository
-     {
-         private DataContext _dataContext;
+    public class PostgresChatActionsRepository : IChatActionsRepository
+    {
+        private DataContext _dataContext;
 
-         public PostgresChatActionsRepository(DataContext dataContext)
-         {
-             _dataContext = dataContext;
-         }
+        public PostgresChatActionsRepository(DataContext dataContext)
+        {
+            _dataContext = dataContext;
+        }
 
-         public void Add(Action action) => _dataContext.ChatActions.Add(action);
+        public void Add(ChatAction action) => _dataContext.ChatActions.Add(action);
 
-         public List<Action> Get() => _dataContext.ChatActions.ToList();
+        public List<ChatAction> GetAll() => _dataContext.ChatActions.ToList();
 
-         public void GetFromDb()
-         { }
+        public ChatAction Get(string chatActionText) => _dataContext.ChatActions.Where(i => i.ActionText == chatActionText).FirstOrDefault();
 
-         public void SaveToDb() => _dataContext.SaveChanges();
-     }
+        public void SaveToDb() => _dataContext.SaveChanges();
+    }
 }

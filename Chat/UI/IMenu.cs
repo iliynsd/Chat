@@ -1,4 +1,3 @@
-using Chat.Repositories;
 using System.Collections.Generic;
 
 namespace Chat.Utils
@@ -17,7 +16,7 @@ namespace Chat.Utils
 
         public void SignOut();
 
-        public User SignUp(List<User> users);
+        public User SignUp();
 
         public void OpenChat(Chat chat, List<Message> messages, List<User> user);
 
@@ -25,18 +24,30 @@ namespace Chat.Utils
 
         public void IncorrectUserName();
 
-        public Chat CreateChat(IUserRepository users, IChatRepository chats);
+        public Chat CreateChat(List<User> users);
 
         public void ShowFitstChatCreate();
 
         public void SuccessSignUp();
 
-        public Message AddMessage(IMessageRepository messages, IChatRepository chats, IUserRepository users);
+        public void UserExists();
+
+        public Message AddMessage(User user, Chat chat);
 
         public void ChatActions();
 
-        public void DeleteMessage(IChatRepository chats, IMessageRepository messages);
+        public (string, string) InputChatAndTextOfMessage();
 
-        public void DeleteChat(IChatRepository chats);
+        public void SuccessfulDeleteMessage();
+        public void NotDeleteMessage();
+
+        public void SuccessfulDeleteChat();
+        public void NotDeleteChat();
+
+        public string GetChatName();
+
+
+        public string GetUserName();
+
     }
 }
