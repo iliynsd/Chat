@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Chat.Bots
 {
@@ -20,7 +19,8 @@ namespace Chat.Bots
             _botCommands = new Dictionary<string, Func<string>>()
             {
                 { "time",() => DateTime.Now.ToString()},
-                {"after 5 minutes", () => DateTime.Now.AddMinutes(5).ToString()}
+                {"early",() => DateTime.Now.AddMinutes(5).ToString()},
+                {"clockbot", () => DateTime.Now.ToString()}
             };
         }
         public void OnCompleted()
@@ -45,17 +45,19 @@ namespace Chat.Bots
                 if (value.ActionText.Contains("add message"))
                 {
                     var actionText = value.ActionText.Split(' ');
-                    var textOfMessage = actionText.Last();
+                    var textOfMessage = actionText[actionText.Length - 2];
                     var chatname = value.ActionText.Split(' ')[4];
                     var chat = chats.GetChat(chatname);
-                    Console.WriteLine(textOfMessage);
-                    if (_botCommands.ContainsKey(textOfMessage))
+                    if (chat.Users.Contains(bot))
                     {
-                        var botAnswer = _botCommands[textOfMessage]?.Invoke();
-                        var message = new Message(bot.Id, chat.Id, botAnswer);
-                        messages.Add(message);
-                        var action = new ChatAction(ChatActions.UserAddMessage(Name, chatname, botAnswer));
-                        actions.Add(action);
+                        if (_botCommands.ContainsKey(textOfMessage))
+                        {
+                            var botAnswer = _botCommands[textOfMessage]?.Invoke();
+                            var message = new Message(bot.Id, chat.Id, botAnswer);
+                            messages.Add(message);
+                            var action = new ChatAction(ChatActions.UserAddMessage(Name, chatname, botAnswer));
+                            actions.Add(action);
+                        }
                     }
                 }
 

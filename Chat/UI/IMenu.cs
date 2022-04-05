@@ -37,15 +37,15 @@ namespace Chat.Utils
         public string InputTextOfMessage();
 
         public void SuccessfulDeleteMessage();
+
         public void NotDeleteMessage();
 
         public void SuccessfulDeleteChat();
+
         public void NotDeleteChat();
 
         public string GetChatName();
 
-
         public string GetUserName();
-
     }
 }

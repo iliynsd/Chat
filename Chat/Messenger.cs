@@ -26,7 +26,6 @@ namespace Chat
             _functional = new Dictionary<string, MessengerCommand>()
             {
                 {"signIn", SignIn},
-                {"try", Try},
                 {"signUp", SignUp},
                 {"sign-out", SignOut},
                 {"create-chat", CreateChat},
@@ -36,55 +35,12 @@ namespace Chat
                 {"del-mes", DeleteMessage},
                 {"add-user", AddUserToChat},
                 {"exit-chat", ExitChat},
-                {"clock-bot", ClockBotInvoke},
-                {"greetings-bot", GreetingsBotInvoke},
                 {"close-chat",  CloseChat}
             };
 
             _menu = menu;
             _serviceProvider = serviceProvider;
         }
-
-
-        private void Try(string[] parametres)
-        {
-            using (var scope = _serviceProvider.CreateScope())
-            {
-                var users = scope.ServiceProvider.GetRequiredService<IUserRepository>();
-                var messages = scope.ServiceProvider.GetRequiredService<IMessageRepository>();
-                var chats = scope.ServiceProvider.GetRequiredService<IChatRepository>();
-                var user1 = new User() { Type = "Bot", Name = "ClockBot", IsActive = true };
-                var user2 = new User() { Type = "Bot", Name = "GreetingsBot", IsActive = true };
-                //var user3 = new User() { Type = "Bot", Name = "tryuser3", IsActive = true };
-                //var user4 = new User() { Type = "Bot", Name = "tryuser4", IsActive = true };
-                users.Add(user1);
-                users.Add(user2);
-                // users.Add(user3);
-                // users.Add(user4);
-                users.SaveToDb();
-                /*
-                chats.Add(new Chat() { Name = "chat1", IsActive = true, Users = new List<User>() { user1, user2, user3 } });
-                chats.Add(new Chat() { Name = "chat2", IsActive = true, Users = new List<User>() { user3, user2, user4 } });
-                chats.Add(new Chat() { Name = "chat3", IsActive = true, Users = new List<User>() { user1, user2, user4 } });
-
-                chats.SaveToDb();
-
-                messages.Add(new Message() { Text = "textuser1", ChatId = 1, UserId = 1, IsActive = true, IsViewed = false, Time = DateTime.Now });
-                messages.Add(new Message() { Text = "textuser2", ChatId = 1, UserId = 2, IsActive = true, IsViewed = false, Time = DateTime.Now });
-                messages.Add(new Message() { Text = "textuser3", ChatId = 1, UserId = 3, IsActive = true, IsViewed = false, Time = DateTime.Now });
-                messages.Add(new Message() { Text = "textuser3", ChatId = 2, UserId = 3, IsActive = true, IsViewed = false, Time = DateTime.Now });
-                messages.Add(new Message() { Text = "textuser2", ChatId = 2, UserId = 2, IsActive = true, IsViewed = false, Time = DateTime.Now });
-                messages.Add(new Message() { Text = "textuser4", ChatId = 2, UserId = 4, IsActive = true, IsViewed = false, Time = DateTime.Now });
-                messages.Add(new Message() { Text = "textuser1", ChatId = 3, UserId = 1, IsActive = true, IsViewed = false, Time = DateTime.Now });
-                messages.Add(new Message() { Text = "textuser2", ChatId = 3, UserId = 2, IsActive = true, IsViewed = false, Time = DateTime.Now });
-                messages.Add(new Message() { Text = "textuser4", ChatId = 3, UserId = 4, IsActive = true, IsViewed = false, Time = DateTime.Now });
-
-               // messages.SaveToDb();*/
-
-            }
-
-        }
-
 
         private void SignIn(string[] parametres)
         {
@@ -194,15 +150,12 @@ namespace Chat
                 var messages = scope.ServiceProvider.GetRequiredService<IMessageRepository>();
                 var chats = scope.ServiceProvider.GetRequiredService<IChatRepository>();
                 var actions = scope.ServiceProvider.GetRequiredService<IChatActionsRepository>();
-                //var bots = null;
-                //TODO create botmanager
 
                 var botManager = scope.ServiceProvider.GetRequiredService<BotManager>();
                 var clockBot = scope.ServiceProvider.GetRequiredService<ClockBot>();
-                //var botUploader = scope.ServiceProvider.GetRequiredService<BotUploader>();
+                var botUploader = scope.ServiceProvider.GetRequiredService<BotUploader>();
                 botManager.Subscribe(clockBot);
-
-
+                botManager.Subscribe(botUploader);
                 var userName = FillUserName(parametres);
                 var chatName = FillChatName(parametres);
 
@@ -211,12 +164,11 @@ namespace Chat
 
                 messages.Add(message);
                 var action = new ChatAction(ChatActions.UserAddMessage(userName, chatName, message.Text));
-               
+
                 actions.Add(action);
                 actions.SaveToDb();
                 messages.SaveToDb();
                 botManager.Notify(action);
-                
             }
 
             _menu.ChatActions();
@@ -343,13 +295,6 @@ namespace Chat
         private void CloseChat(string[] parametres)
         {
             _menu.ShowMainMenu();
-        }
-
-        private void ClockBotInvoke(string[] parametres) { }
-
-        private void GreetingsBotInvoke(string[] parametres)
-        {
-
         }
 
         private void CreateChat(string[] parametres)

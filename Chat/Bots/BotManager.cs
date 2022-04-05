@@ -8,10 +8,7 @@ namespace Chat.Bots
     {
         private readonly List<IObserver<ChatAction>> _observers;
 
-        public BotManager()
-        {
-            _observers = new List<IObserver<ChatAction>>();
-        }
+        public BotManager() => _observers = new List<IObserver<ChatAction>>();
 
         public IDisposable Subscribe(IObserver<ChatAction> observer)
         {
@@ -19,12 +16,6 @@ namespace Chat.Bots
             return null;
         }
 
-        public void Notify(ChatAction action)
-        {
-            foreach(IObserver<ChatAction> observer in _observers)
-            {
-                observer.OnNext(action);
-            }
-        }
+        public void Notify(ChatAction action) => _observers.ForEach(i => i.OnNext(action));
     }
 }
