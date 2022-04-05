@@ -14,5 +14,15 @@ namespace Chat
         public bool IsActive { get; set; }
 
         public Message() { }
+
+        public Message(int userId, int chatId, string text)
+        {
+            UserId = userId;
+            ChatId = chatId;
+            Text = text;
+            Time = DateTime.Now;
+            IsViewed = false;
+            IsActive = true;
+        }
     }
 }

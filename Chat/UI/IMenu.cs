@@ -20,8 +20,6 @@ namespace Chat.Utils
 
         public void OpenChat(Chat chat, List<Message> messages, List<User> user);
 
-        public string GetChatNameToOpen();
-
         public void IncorrectUserName();
 
         public Chat CreateChat(List<User> users);
@@ -36,7 +34,7 @@ namespace Chat.Utils
 
         public void ChatActions();
 
-        public (string, string) InputChatAndTextOfMessage();
+        public string InputTextOfMessage();
 
         public void SuccessfulDeleteMessage();
         public void NotDeleteMessage();

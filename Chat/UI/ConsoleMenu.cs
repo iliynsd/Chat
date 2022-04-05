@@ -83,13 +83,6 @@ namespace Chat.Utils
         }
 
 
-
-        public string GetChatNameToOpen()
-        {
-            Console.WriteLine("Enter name of chat to open");
-            return Console.ReadLine();
-        }
-
         public void IncorrectUserName()
         {
             Console.WriteLine("This user does not exist");
@@ -152,13 +145,10 @@ namespace Chat.Utils
         }
 
 
-        public (string, string) InputChatAndTextOfMessage()
+        public string InputTextOfMessage()
         {
-            var chatName = GetChatName();
             Console.WriteLine("Enter text of message to delete");
-            var textMes = Console.ReadLine();
-
-            return (chatName, textMes);
+            return Console.ReadLine();
         }
 
         public void SuccessfulDeleteChat()

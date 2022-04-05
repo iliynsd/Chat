@@ -1,4 +1,5 @@
-﻿using Chat.Dal;
+﻿using Chat.Bots;
+using Chat.Dal;
 using Chat.Repositories;
 using Chat.Repositories.PostgresRepositories;
 using Chat.Utils;
@@ -31,9 +32,10 @@ namespace Chat
                     serviceCollection.AddTransient<IChatRepository, PostgresChatRepository>();
                     serviceCollection.AddTransient<IUserRepository, PostgresUserRepository>();
                     serviceCollection.AddTransient<IChatActionsRepository, PostgresChatActionsRepository>();
-
+                    serviceCollection.AddSingleton<BotManager>();
+                    serviceCollection.AddSingleton<ClockBot>();
+                    serviceCollection.AddSingleton<BotUploader>();
                     serviceCollection.AddHostedService<Messenger>();
-
                 });
         }
     }
