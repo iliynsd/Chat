@@ -41,6 +41,7 @@ namespace Chat.Bots
                 var chats = scope.ServiceProvider.GetRequiredService<IChatRepository>();
                 var actions = scope.ServiceProvider.GetRequiredService<IChatActionsRepository>();
                 var users = scope.ServiceProvider.GetRequiredService<IUserRepository>();
+
                 var bot = users.Get(Name);
                 if (value.ActionText.Contains("add message"))
                 {

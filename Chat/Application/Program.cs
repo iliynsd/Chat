@@ -35,7 +35,9 @@ namespace Chat
                     serviceCollection.AddSingleton<BotManager>();
                     serviceCollection.AddSingleton<ClockBot>();
                     serviceCollection.AddSingleton<BotUploader>();
-                    serviceCollection.AddHostedService<Messenger>();
+
+                    serviceCollection.AddHostedService<MessengerWeb>();
+                    //   serviceCollection.AddHostedService<Messenger>();
                 });
         }
     }

@@ -42,6 +42,7 @@ namespace Chat
             _serviceProvider = serviceProvider;
         }
 
+
         private void SignIn(string[] parametres)
         {
             using (var scope = _serviceProvider.CreateScope())

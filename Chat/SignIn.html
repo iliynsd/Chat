@@ -1,0 +1,20 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+</head>
+<body>
+    <span>Sign in </span>
+    <form name="myform" action="/signIn" method="get">
+        <input name="username" />
+        <input type="submit" value="Login" />
+    </form>
+    <span>Haven't got an accout yet</span>
+    <button onclick="redirect();">SignUp</button>
+    <script>
+        function redirect() { window.location ="http://localhost:8080/SignUp" }
+    </script>
+</body>
+</html>
