@@ -20,6 +20,6 @@ namespace Chat.Repositories.PostgresRepositories
 
         public ChatAction Get(string chatActionText) => _dataContext.ChatActions.Where(i => i.ActionText == chatActionText).FirstOrDefault();
 
-        public void SaveToDb() => _dataContext.SaveChanges();
+        public void Save() => _dataContext.SaveChanges();
     }
 }

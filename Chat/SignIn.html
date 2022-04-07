@@ -9,7 +9,7 @@
     <span>Sign in </span>
     <form name="myform" action="/signIn" method="get">
         <input name="username" />
-        <input type="submit" value="Login" />
+        <input type="submit" value="Login" onclick="location.href='@Url.Action("SignIn", "UserPage")'"/>
     </form>
     <span>Haven't got an accout yet</span>
     <button onclick="redirect();">SignUp</button>

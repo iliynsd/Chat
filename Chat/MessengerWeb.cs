@@ -1,11 +1,7 @@
 ﻿using Microsoft.Extensions.Hosting;
-using Newtonsoft.Json;
 using System;
-using System.IO;
 using System.Linq;
 using System.Net;
-using System.Net.Http;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -23,9 +19,8 @@ namespace Chat
             {
                 HttpListenerContext ctx = listener.GetContext();
 
-
-                //HttpListenerResponse response = ctx.Response;
-
+                HttpListenerRequest request = ctx.Request;
+                HttpListenerResponse response = ctx.Response;
 
 
 
@@ -45,44 +40,26 @@ namespace Chat
 
 
                 object[] @params = method.GetParameters()
-                                    .Select((p, i) =>Convert.ChangeType(strParams[i], p.ParameterType))
+                                    .Select((p, i) => Convert.ChangeType(strParams[i], p.ParameterType))
                                     .ToArray();
 
                 object ret = method.Invoke(this, @params);
-
-                string retstr = JsonConvert.SerializeObject(ret);
-
-
-               /* var file = File.ReadAllText("SignIn.html");
-                byte[] buffer = Encoding.UTF8.GetBytes(file);
-
-                response.ContentLength64 = buffer.Length;
-                Stream output = response.OutputStream;
-                output.Write(buffer, 0, buffer.Length);
-                output.Close();*/
-
-
-
-
             }
 
             listener.Stop();
             listener.Close();
-
-
-
         }
 
-
         [Mapping("signIn")]
-        public void SignIn(string name)
+        public string SignIn(string username)
         {
+            return username;
+        }
 
-            var file = File.ReadAllText("SignIn.html");
-byte[] buffer = Encoding.UTF8.GetBytes(file);
-           var response = WebRequest.Create("http://localhost:8080/").GetResponse().GetResponseStream();
-
-            response.Write(buffer, 0, file.Length);
+        [Mapping("signUp")]
+        public string SignUp()
+        {
+            return "SignIn.html";
         }
 
         public Task StartAsync(CancellationToken cancellationToken)
@@ -95,6 +72,8 @@ byte[] buffer = Encoding.UTF8.GetBytes(file);
             throw new NotImplementedException();
         }
     }
+
+
     class Mapping : Attribute
     {
         public string Map;

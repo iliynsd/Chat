@@ -8,6 +8,6 @@ namespace Chat.Repositories
         public void Add(ChatAction action);
         public List<ChatAction> GetAll();
         public ChatAction Get(string chatActionText);
-        public void SaveToDb();
+        public void Save();
     }
 }

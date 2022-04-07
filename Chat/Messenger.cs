@@ -1,4 +1,3 @@
-using Chat.Bots;
 using Chat.Models;
 using Chat.Repositories;
 using Chat.Utils;
@@ -6,7 +5,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,35 +13,17 @@ namespace Chat
 {
     public class Messenger : IHostedService
     {
-        private Dictionary<string, MessengerCommand> _functional;
         private IMenu _menu;
         private IServiceProvider _serviceProvider;
-        private delegate void MessengerCommand(string[] parametres);
 
         public Messenger(IMenu menu, [FromServices] IServiceProvider serviceProvider)
         {
-
-            _functional = new Dictionary<string, MessengerCommand>()
-            {
-                {"signIn", SignIn},
-                {"signUp", SignUp},
-                {"sign-out", SignOut},
-                {"create-chat", CreateChat},
-                {"delete-chat", DeleteChat},
-                {"open-chat", OpenChat},
-                {"add-mes", AddMessage},
-                {"del-mes", DeleteMessage},
-                {"add-user", AddUserToChat},
-                {"exit-chat", ExitChat},
-                {"close-chat",  CloseChat}
-            };
-
             _menu = menu;
             _serviceProvider = serviceProvider;
         }
 
 
-        private void SignIn(string[] parametres)
+        public void SignIn(string userName)
         {
             using (var scope = _serviceProvider.CreateScope())
             {
@@ -52,13 +32,11 @@ namespace Chat
                 var chats = scope.ServiceProvider.GetRequiredService<IChatRepository>();
                 var actions = scope.ServiceProvider.GetRequiredService<IChatActionsRepository>();
 
-                var userName = FillUserName(parametres);
-
                 if (users.IsUserExist(userName))
                 {
                     var action = new ChatAction(ChatActions.UserSignIn(userName));
                     actions.Add(action);
-                    actions.SaveToDb();
+                    actions.Save();
                     if (users.UserHasChats(userName))
                     {
                         var userChats = chats.GetAll().FindAll(i => i.Users.Contains(users.Get(userName)));
@@ -97,7 +75,7 @@ namespace Chat
             }
         }
 
-        private void SignUp(string[] parametres)
+        public void SignUp()
         {
             using (var scope = _serviceProvider.CreateScope())
             {
@@ -106,44 +84,38 @@ namespace Chat
 
                 var user = _menu.SignUp();
 
-                while (true)
+                if (users.IsUserExist(user.Name))
                 {
-                    if (users.IsUserExist(user.Name))
-                    {
-                        _menu.UserExists();
-                        user = _menu.SignUp();
-                    }
-                    else
-                    {
-                        break;
-                    }
+                    _menu.UserExists();
+                    user = _menu.SignUp();
                 }
 
+
+
                 users.Add(user);
-                users.SaveToDb();
+                users.Save();
 
                 var action = new ChatAction(ChatActions.UserSignUp(user.Name));
                 actions.Add(action);
-                actions.SaveToDb();
+                actions.Save();
 
                 _menu.SuccessSignUp();
             }
         }
 
-        private void SignOut(string[] parametres)
+        public void SignOut(string userName)
         {
             using (var scope = _serviceProvider.CreateScope())
             {
                 var actions = scope.ServiceProvider.GetRequiredService<IChatActionsRepository>();
-                var userName = FillUserName(parametres);
                 actions.Add(new ChatAction(ChatActions.UserSignOut(userName)));
-                actions.SaveToDb();
+                actions.Save();
             }
             _menu.SignOut();
             _menu.ShowAuthorizationPage();
         }
 
-        private void AddMessage(string[] parametres)
+        public void AddMessage(string userName, string chatName)
         {
             using (var scope = _serviceProvider.CreateScope())
             {
@@ -152,13 +124,6 @@ namespace Chat
                 var chats = scope.ServiceProvider.GetRequiredService<IChatRepository>();
                 var actions = scope.ServiceProvider.GetRequiredService<IChatActionsRepository>();
 
-                var botManager = scope.ServiceProvider.GetRequiredService<BotManager>();
-                var clockBot = scope.ServiceProvider.GetRequiredService<ClockBot>();
-                var botUploader = scope.ServiceProvider.GetRequiredService<BotUploader>();
-                botManager.Subscribe(clockBot);
-                botManager.Subscribe(botUploader);
-                var userName = FillUserName(parametres);
-                var chatName = FillChatName(parametres);
 
                 var user = users.Get(userName);
                 var message = _menu.AddMessage(user, chats.GetChat(chatName));
@@ -167,19 +132,21 @@ namespace Chat
                 var action = new ChatAction(ChatActions.UserAddMessage(userName, chatName, message.Text));
 
                 actions.Add(action);
-                actions.SaveToDb();
-                messages.SaveToDb();
-                botManager.Notify(action);
+                actions.Save();
+                messages.Save();
+                var bots = scope.ServiceProvider.GetServices<IMessageBot>();
+
+                foreach (var bot in bots)
+                {
+                    bot.OnMessage(message);
+                }
             }
 
             _menu.ChatActions();
         }
 
-        private void OpenChat(string[] parametres)
+        public void OpenChat(string userName, string chatName)
         {
-            var userName = FillUserName(parametres);
-            var chatName = FillChatName(parametres);
-
             using (var scope = _serviceProvider.CreateScope())
             {
                 var users = scope.ServiceProvider.GetRequiredService<IUserRepository>();
@@ -189,7 +156,7 @@ namespace Chat
 
                 var chat = chats.GetChat(chatName);
                 messages.GetChatMessages(chat).ForEach(i => i.IsViewed = true);
-                messages.SaveToDb();
+                messages.Save();
                 var chatUsers = users.GetAll().FindAll(i => chat.Users.Contains(i));
 
                 var actionUserLeftChat = actions.Get($"User {userName} left chat - {chat.Name}");
@@ -206,11 +173,8 @@ namespace Chat
             }
         }
 
-        private void DeleteChat(string[] parametres)
+        public void DeleteChat(string userName, string chatName)
         {
-            var userName = FillUserName(parametres);
-            var chatName = FillChatName(parametres);
-
             using (var scope = _serviceProvider.CreateScope())
             {
                 var chats = scope.ServiceProvider.GetRequiredService<IChatRepository>();
@@ -231,25 +195,20 @@ namespace Chat
                     _menu.NotDeleteChat();
                 }
 
-                actions.SaveToDb();
-                chats.SaveToDb();
+                actions.Save();
+                chats.Save();
             }
 
             _menu.ShowMainMenu();
         }
 
-        private void DeleteMessage(string[] parametres)
+        public void DeleteMessage(string userName, string chatName, string textOfMessage)
         {
             using (var scope = _serviceProvider.CreateScope())
             {
                 var chats = scope.ServiceProvider.GetRequiredService<IChatRepository>();
                 var messages = scope.ServiceProvider.GetRequiredService<IMessageRepository>();
                 var actions = scope.ServiceProvider.GetRequiredService<IChatActionsRepository>();
-
-                var userName = FillUserName(parametres);
-                var chatName = FillChatName(parametres);
-
-                var textOfMessage = _menu.InputTextOfMessage();
 
                 var chat = chats.GetChat(chatName);
                 var message = messages.GetChatMessages(chat).Find(i => i.Text == textOfMessage);
@@ -266,39 +225,34 @@ namespace Chat
                     _menu.NotDeleteMessage();
                 }
 
-                actions.SaveToDb();
-                chats.SaveToDb();
-                messages.SaveToDb();
+                actions.Save();
+                chats.Save();
+                messages.Save();
             }
 
             _menu.ChatActions();
         }
 
 
-        private void ExitChat(string[] parametres)
+        public void ExitChat(string userName, string chatName)
         {
             using (var scope = _serviceProvider.CreateScope())
             {
                 var actions = scope.ServiceProvider.GetRequiredService<IChatActionsRepository>();
-                var users = scope.ServiceProvider.GetRequiredService<IUserRepository>();
-
-                var userName = FillUserName(parametres);
-                var chatName = FillChatName(parametres);
-
                 var action = new ChatAction(ChatActions.UserLeftChat(userName, chatName));
                 actions.Add(action);
-                actions.SaveToDb();
+                actions.Save();
             }
 
             _menu.ShowMainMenu();
         }
 
-        private void CloseChat(string[] parametres)
+        public void CloseChat()
         {
             _menu.ShowMainMenu();
         }
 
-        private void CreateChat(string[] parametres)
+        public void CreateChat()
         {
             using (var scope = _serviceProvider.CreateScope())
             {
@@ -310,49 +264,42 @@ namespace Chat
                 var action = new ChatAction(ChatActions.UserCreateChat(chat.Users.First().Name, chat.Name));
                 actions.Add(action);
                 chats.Add(chat);
-                actions.SaveToDb();
-                chats.SaveToDb();
-                users.SaveToDb();
+                actions.Save();
+                chats.Save();
+                users.Save();
             }
 
             _menu.ShowMainMenu();
         }
 
-        private void AddUserToChat(string[] parametres)
+        public void AddUserToChat(string userName, string chatName)
         {
             using (var scope = _serviceProvider.CreateScope())
             {
                 var chats = scope.ServiceProvider.GetRequiredService<IChatRepository>();
                 var users = scope.ServiceProvider.GetRequiredService<IUserRepository>();
 
-                var userName = FillUserName(parametres);
-                var chatName = FillChatName(parametres);
-
                 var chat = chats.GetChat(chatName);
                 var user = users.Get(userName);
                 chat.Users.Add(user);
-                chats.SaveToDb();
+                chats.Save();
             }
+
             _menu.ChatActions();
         }
-        public void Start()
+
+        public  void GetAndInvokeController()
         {
-            _menu.ShowAuthorizationPage();
+            var messenger = typeof(Messenger);
+
             var input = Console.ReadLine().Split(' ');
             var command = input.FirstOrDefault();
             var parameters = input.Skip(1).ToArray();
 
             while (command != "exit")
             {
-                if (_functional.ContainsKey(command))
-                {
-                    _functional[command]?.Invoke(parameters);
-                }
-                else
-                {
-                    _menu.InvalidOperation();
-                }
-
+                var method = messenger.GetMethod(command);
+                method.Invoke(this, parameters);
                 input = Console.ReadLine().Split(' ');
                 command = input.FirstOrDefault();
                 parameters = input.Skip(1).ToArray();
@@ -361,44 +308,27 @@ namespace Chat
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
-            Start();
+            _menu.ShowAuthorizationPage();
+            _menu.GetAndInvokeController();
+           /* var messenger = typeof(Messenger);
+
+            var input = Console.ReadLine().Split(' ');
+            var command = input.FirstOrDefault();
+            var parameters = input.Skip(1).ToArray();
+
+            while (command != "exit")
+            {
+                var method = messenger.GetMethod(command);
+                method.Invoke(this, parameters);
+                input = Console.ReadLine().Split(' ');
+                command = input.FirstOrDefault();
+                parameters = input.Skip(1).ToArray();
+            }*/
         }
 
         public async Task StopAsync(CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
-        }
-
-        private string FillUserName(string[] parametres)
-        {
-            var userName = string.Empty;
-            if (parametres.Count() > 0)
-            {
-                userName = parametres[0];
-            }
-
-            if (string.IsNullOrEmpty(userName))
-            {
-                userName = _menu.GetUserName();
-            }
-
-            return userName;
-        }
-
-        private string FillChatName(string[] parametres)
-        {
-            var chatName = string.Empty;
-            if (parametres.Count() > 1)
-            {
-                chatName = parametres[1];
-            }
-
-            if (string.IsNullOrEmpty(chatName))
-            {
-                chatName = _menu.GetChatName();
-            }
-
-            return chatName;
         }
     }
 }

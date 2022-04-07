@@ -27,6 +27,6 @@ namespace Chat.Repositories.PostgresRepositories
         public bool IsChatNotEmpty(Chat chat) => _dataContext.Messages.Select(i => i.ChatId).Contains(chat.Id);
 
 
-        public void SaveToDb() => _dataContext.SaveChanges();
+        public void Save() => _dataContext.SaveChanges();
     }
 }

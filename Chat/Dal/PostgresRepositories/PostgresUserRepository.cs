@@ -26,7 +26,7 @@ namespace Chat.Repositories
 
         public bool IsUserExist(string username) => _dataContext.Users.Select(i => i.Name).Contains(username);
 
-        public void SaveToDb() => _dataContext.SaveChanges();
+        public void Save() => _dataContext.SaveChanges();
 
 
         public bool UserHasChats(string userName) => _dataContext.Users.Where(i => i.IsActive == true).First(i => i.Name == userName).Chats.Count > 0;

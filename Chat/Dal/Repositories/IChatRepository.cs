@@ -7,8 +7,9 @@ namespace Chat.Repositories
         public void Add(Chat chat);
         public void Delete(Chat chat);
         public List<Chat> GetAll();
-        public void SaveToDb();
+        public void Save();
 
         public Chat GetChat(string chatName);
+        public Chat GetChatById(int id);
     }
 }

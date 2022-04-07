@@ -7,7 +7,7 @@ namespace Chat.Repositories
         public void Add(Message message);
         public void Delete(Message message);
         public List<Message> GetAll();
-        public void SaveToDb();
+        public void Save();
 
         public List<Message> GetChatMessages(Chat chat);
         public bool IsChatNotEmpty(Chat chat);

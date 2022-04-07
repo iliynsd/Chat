@@ -21,6 +21,8 @@ namespace Chat.Repositories.PostgresRepositories
 
         public Chat GetChat(string chatName) => _dataContext.Chats.Where(i => i.IsActive).FirstOrDefault(i => i.Name == chatName);
 
-        public void SaveToDb() => _dataContext.SaveChanges();
+        public Chat GetChatById(int id) => _dataContext.Chats.Where(i => i.IsActive).FirstOrDefault(i => i.Id == id);
+
+        public void Save() => _dataContext.SaveChanges();
     }
 }

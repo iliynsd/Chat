@@ -187,5 +187,23 @@ namespace Chat.Utils
         {
             Console.WriteLine("Message wasn't deleted");
         }
+
+        public  void GetAndInvokeController()
+        {
+            var messenger = typeof(Messenger);
+
+            var input = Console.ReadLine().Split(' ');
+            var command = input.FirstOrDefault();
+            var parameters = input.Skip(1).ToArray();
+           
+            while (command != "exit")
+            {
+                var method = messenger.GetMethod(command);
+                method.Invoke(this, parameters);
+                input = Console.ReadLine().Split(' ');
+                command = input.FirstOrDefault();
+                parameters = input.Skip(1).ToArray();
+            }
+        }
     }
 }

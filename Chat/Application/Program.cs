@@ -1,4 +1,5 @@
 ﻿using Chat.Bots;
+using Chat.BotServices;
 using Chat.Dal;
 using Chat.Repositories;
 using Chat.Repositories.PostgresRepositories;
@@ -32,13 +33,17 @@ namespace Chat
                     serviceCollection.AddTransient<IChatRepository, PostgresChatRepository>();
                     serviceCollection.AddTransient<IUserRepository, PostgresUserRepository>();
                     serviceCollection.AddTransient<IChatActionsRepository, PostgresChatActionsRepository>();
-                    serviceCollection.AddSingleton<BotManager>();
-                    serviceCollection.AddSingleton<ClockBot>();
-                    serviceCollection.AddSingleton<BotUploader>();
 
-                    serviceCollection.AddHostedService<MessengerWeb>();
-                    //   serviceCollection.AddHostedService<Messenger>();
+
+                    serviceCollection.AddSingleton<IMessageBot, ClockBot>();
+                    serviceCollection.AddSingleton<IMessageBot, BotUploader>();
+
+                    serviceCollection.AddSingleton<IMessageBotService, MessageBotService>();
+                    serviceCollection.AddSingleton<IChatActionBotService, ChatActionBotService>();
+                    serviceCollection.AddSingleton<IGoToUrlBotService, GoToUrlBotService>();
+                    serviceCollection.AddSingleton<Messenger>();
+                    serviceCollection.AddHostedService<Messenger>();
                 });
         }
     }
-}
+}//TODO сделать webmenu принимать url, возвращать json, потом вынести логику api в отдельный файл, переделать ботов, сделать userdto; 
