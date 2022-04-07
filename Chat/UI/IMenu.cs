@@ -48,7 +48,7 @@ namespace Chat.Utils
 
         public string GetUserName();
 
-        
-        public void GetAndInvokeController();
+
+        public void GetAndInvokeController(Messenger mes);
     }
 }

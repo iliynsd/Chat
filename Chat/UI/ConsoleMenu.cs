@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,10 +7,43 @@ namespace Chat.Utils
 {
     public class ConsoleMenu : IMenu
     {
-        public string SignIn()
+        private Messenger _messenger;
+        private Dictionary<string, MessengerCommand> _functional;
+        private delegate void MessengerCommand();
+
+        public ConsoleMenu(Messenger messenger)
+        {
+            _messenger = messenger;
+
+            _functional = new Dictionary<string, MessengerCommand>()
+            {
+                {"signIn", SignIn},
+                {"signUp", SignUp},
+                {"sign-out", SignOut},
+                {"create-chat", CreateChat},
+                {"delete-chat", DeleteChat},
+                {"open-chat", OpenChat},
+                {"add-mes", AddMessage},
+                {"del-mes", DeleteMessage},
+                {"add-user", AddUserToChat},
+                {"exit-chat", ExitChat},
+                {"close-chat",  CloseChat}
+            };
+        }
+
+        
+        public void DefaultPage()
+        {
+            var input = Console.ReadLine();
+
+        }
+
+
+            public string SignIn(string input)
         {
             Console.WriteLine("It's signIn menu");
             Console.WriteLine("Please enter your username to see your chats");
+            
             return Console.ReadLine();
         }
 
@@ -186,24 +220,6 @@ namespace Chat.Utils
         public void NotDeleteMessage()
         {
             Console.WriteLine("Message wasn't deleted");
-        }
-
-        public  void GetAndInvokeController()
-        {
-            var messenger = typeof(Messenger);
-
-            var input = Console.ReadLine().Split(' ');
-            var command = input.FirstOrDefault();
-            var parameters = input.Skip(1).ToArray();
-           
-            while (command != "exit")
-            {
-                var method = messenger.GetMethod(command);
-                method.Invoke(this, parameters);
-                input = Console.ReadLine().Split(' ');
-                command = input.FirstOrDefault();
-                parameters = input.Skip(1).ToArray();
-            }
         }
     }
 }

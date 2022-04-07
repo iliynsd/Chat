@@ -22,8 +22,6 @@ namespace Chat.Bots
              };
         }
 
-
-
         public void OnMessage(Message message)
         {
             if (_botCommands.ContainsKey(message.Text))
