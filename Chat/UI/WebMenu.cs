@@ -1,8 +1,6 @@
-﻿using Chat.Utils;
-
-namespace Chat.UI
+﻿namespace Chat.UI
 {
-    class WebMenu 
+    class WebMenu
     {
 
     }

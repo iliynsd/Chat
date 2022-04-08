@@ -4,51 +4,19 @@ namespace Chat.Utils
 {
     public interface IMenu
     {
-        public string SignIn();
-
-        public void ShowChatWithLastMessage(Chat chat, string message, User user);
-
-        public void ShowMainMenu();
-
         public void ShowAuthorizationPage();
-
+        public void SignIn(string input);
+        public void SignUp(string input);
+        public void ShowUserPage(List<Chat> userChats);
         public void InvalidOperation();
-
-        public void SignOut();
-
-        public User SignUp();
-
-        public void OpenChat(Chat chat, List<Message> messages, List<User> user);
-
+        public void ShowChatPage(Chat chat, List<Message> messages, List<User> users);
+        public void OpenChat(string input);
         public void IncorrectUserName();
-
-        public Chat CreateChat(List<User> users);
-
-        public void ShowFitstChatCreate();
-
-        public void SuccessSignUp();
-
-        public void UserExists();
-
-        public Message AddMessage(User user, Chat chat);
-
-        public void ChatActions();
-
-        public string InputTextOfMessage();
-
-        public void SuccessfulDeleteMessage();
-
-        public void NotDeleteMessage();
-
-        public void SuccessfulDeleteChat();
-
-        public void NotDeleteChat();
-
-        public string GetChatName();
-
-        public string GetUserName();
-
-
-        public void GetAndInvokeController(Messenger mes);
+        public void CreateChat(string input);
+        public void DeleteChat(string input);
+        public void ExitChat(string input);
+        public void AddMessage(string input);
+        public void DeleteMessage(string input);
+        public void AddUserToChat(string input);
     }
 }

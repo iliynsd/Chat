@@ -10,6 +10,6 @@
         public static string UserCreateChat(string username, string chatname) => $"User {username} create chat - {chatname}";
         public static string UserDeleteChat(string username, string chatname) => $"User {username} delete chat - {chatname}";
         public static string UserLeftChat(string username, string chatname) => $"User {username} left chat - {chatname}";
-        public static string UserSignOut(string username) => $"User {username} sign out";
+
     }
 }
