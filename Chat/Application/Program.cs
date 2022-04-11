@@ -3,6 +3,7 @@ using Chat.BotServices;
 using Chat.Dal;
 using Chat.Repositories;
 using Chat.Repositories.PostgresRepositories;
+using Chat.UI;
 using Chat.Utils;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -11,12 +12,11 @@ using Microsoft.Extensions.Hosting;
 
 namespace Chat
 {
-
     class Program
     {
         static void Main(string[] args)
         {
-            CreateHostBuilder(args).Build().Run();
+            CreateHostBuilder(args).Build().Services.GetRequiredService<IMenu>().Start();
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args)
@@ -28,22 +28,25 @@ namespace Chat
                     serviceCollection.AddDbContext<DataContext>(options =>
                         options.UseLazyLoadingProxies().UseNpgsql(hostContext.Configuration.GetConnectionString("DefaultConnection")));
 
-                    serviceCollection.AddSingleton<IMenu, ConsoleMenu>();
+                    serviceCollection.AddSingleton<IMenu, WebMenu>();
                     serviceCollection.AddTransient<IMessageRepository, PostgresMessageRepository>();
                     serviceCollection.AddTransient<IChatRepository, PostgresChatRepository>();
                     serviceCollection.AddTransient<IUserRepository, PostgresUserRepository>();
                     serviceCollection.AddTransient<IChatActionsRepository, PostgresChatActionsRepository>();
 
-
-                    serviceCollection.AddSingleton<IMessageBot, ClockBot>();
-                    serviceCollection.AddSingleton<IMessageBot, BotUploader>();
-
-                    serviceCollection.AddSingleton<IMessageBotService, MessageBotService>();
-                    serviceCollection.AddSingleton<IChatActionBotService, ChatActionBotService>();
-                    serviceCollection.AddSingleton<IGoToUrlBotService, GoToUrlBotService>();
                     serviceCollection.AddSingleton<Messenger>();
-                    serviceCollection.AddHostedService<Messenger>();
                 });
+        }
+
+        public static void RegistrateBotServices()
+        {
+            var serviceBotCollection = new ServiceCollection();
+            serviceBotCollection.AddSingleton<IMessageBot, ClockBot>();
+            serviceBotCollection.AddSingleton<IMessageBot, BotUploader>();
+            serviceBotCollection.AddSingleton<IMessageBotService, MessageBotService>();
+            serviceBotCollection.AddSingleton<IChatActionBotService, ChatActionBotService>();
+            serviceBotCollection.AddSingleton<IGoToUrlBotService, GoToUrlBotService>();
+            serviceBotCollection.BuildServiceProvider();
         }
     }
     //TODO сделать отдельный контейнер для ботов, насытить интерфейс он должен принимать url вызывать соответсвующий метод у интерфейса для разборки урла вынимать все параметры и вызывать методы messenger api типа SignIn(username)

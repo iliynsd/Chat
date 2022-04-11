@@ -6,15 +6,20 @@
     <title></title>
 </head>
 <body>
-    <span>Sign in </span>
-    <form name="myform" action="/signIn" method="get">
+    <span>Authorization page</span>
+    <form name="myform" action="/signIn" method="post">
         <input name="username" />
-        <input type="submit" value="Login" onclick="location.href='@Url.Action("SignIn", "UserPage")'"/>
+        <input type="submit" value="Login"/>
     </form>
-    <span>Haven't got an accout yet</span>
-    <button onclick="redirect();">SignUp</button>
+    <p>
+        <span style="padding:20px;">Haven't got an accout yet</span>
+        <button onclick="redirectToSignUp();">SignUp</button>
+    </p>
+
+
+
     <script>
-        function redirect() { window.location ="http://localhost:8080/SignUp" }
+        function redirectToSignUp() { window.location ="http://localhost:80/signUp" }
     </script>
 </body>
 </html>

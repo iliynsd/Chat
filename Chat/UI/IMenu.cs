@@ -4,6 +4,7 @@ namespace Chat.Utils
 {
     public interface IMenu
     {
+        public void Start();
         public void ShowAuthorizationPage();
         public void SignIn(string input);
         public void SignUp(string input);

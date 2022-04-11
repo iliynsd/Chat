@@ -14,10 +14,15 @@ namespace Chat.Utils
         {
             _messenger = messenger;
         }
+
+        public void Start()
+        {
+            ShowAuthorizationPage();
+        }
         public void ShowAuthorizationPage()
         {
             Console.WriteLine("It's authorization page");
-            Console.WriteLine("Enter signUp to pass registration or signIn if you have an account or exit to exit");
+            Console.WriteLine("Enter signUp to pass registration or signIn if you have an account");
             var input = Console.ReadLine();
             if (Regex.IsMatch(input, Template("signIn")))
             {
@@ -36,18 +41,12 @@ namespace Chat.Utils
 
         public void SignIn(string input)
         {
-            var userName = input.Split(' ')[1];
-            if (string.IsNullOrEmpty(userName))
-            {
-                Console.WriteLine("It's signIn menu");
-                Console.WriteLine("Please enter your username to see your chats");
-
-                userName = Console.ReadLine();
-            }
+            var userName = GetUserName(input);
 
             var userChats = _messenger.SignIn(userName);
             if (userChats is null)
             {
+                Console.WriteLine("Have not got this user");
                 ShowAuthorizationPage();
             }
             else
@@ -58,14 +57,8 @@ namespace Chat.Utils
 
         public void SignUp(string input)
         {
-            var userName = input.Split(' ')[1];
-            if (string.IsNullOrEmpty(userName))
-            {
-                Console.WriteLine("It's signUp menu");
-                Console.WriteLine("Please enter your username to craete an account");
 
-                userName = Console.ReadLine();
-            }
+            var userName = GetUserName(input);
             var user = new User(userName, Type.User.ToString(), true);
 
             var isSignedUp = _messenger.SignUp(user);
@@ -143,7 +136,7 @@ namespace Chat.Utils
                 Console.WriteLine("Haven't got any messages in this chat yet");
             }
 
-            Console.WriteLine("Enter add-mes to add message or add-user to add user to chat or del-mes to delete message");
+            Console.WriteLine("Enter add-mes to add message or add-user to add user to chat or del-mes to delete message or close-chat to close chat");
 
             var input = Console.ReadLine();
             if (Regex.IsMatch(input, Template("add-mes")))
@@ -158,36 +151,31 @@ namespace Chat.Utils
             {
                 DeleteMessage(input);
             }
+            else if (Regex.IsMatch(input, Template("close-chat")))
+            {
+                CloseChat(input);
+            }
             else
             {
                 InvalidOperation();
+                ShowChatPage(chat, messages, users);
             }
         }
 
         public void OpenChat(string input)
         {
-
-            var userName = input.Split(' ')[1];
-            var chatName = input.Split(' ')[2];
-
-            if (string.IsNullOrEmpty(userName))
-            {
-                Console.WriteLine("Please enter your username");
-                userName = Console.ReadLine();
-            }
-
-            if (string.IsNullOrEmpty(chatName))
-            {
-                Console.WriteLine("Please enter chat name");
-                chatName = Console.ReadLine();
-            }
-
+            var userName = GetUserName(input);
+            var chatName = GetChatName(input);
             var result = _messenger.OpenChat(userName, chatName);
-
             ShowChatPage(result.Item1, result.Item2, result.Item3);
         }
 
-
+        public void CloseChat(string input)
+        {
+            var userName = GetUserName(input);
+            var chats = _messenger.SignIn(userName);
+            ShowUserPage(chats);
+        }
         public void IncorrectUserName()
         {
             Console.WriteLine("This user does not exist");
@@ -196,20 +184,8 @@ namespace Chat.Utils
 
         public void CreateChat(string input)
         {
-            var userName = input.Split(' ')[1];
-            var chatName = input.Split(' ')[2];
-
-            if (string.IsNullOrEmpty(userName))
-            {
-                Console.WriteLine("Please enter your username");
-                userName = Console.ReadLine();
-            }
-
-            if (string.IsNullOrEmpty(chatName))
-            {
-                Console.WriteLine("Please enter chat name");
-                chatName = Console.ReadLine();
-            }
+            var userName = GetUserName(input);
+            var chatName = GetChatName(input);
 
             Console.WriteLine($"Chat with name - {chatName} is created");
 
@@ -220,117 +196,98 @@ namespace Chat.Utils
 
         public void DeleteChat(string input)
         {
-            var userName = input.Split(' ')[1];
-            var chatName = input.Split(' ')[2];
-
-            if (string.IsNullOrEmpty(userName))
-            {
-                Console.WriteLine("Please enter your username");
-                userName = Console.ReadLine();
-            }
-
-            if (string.IsNullOrEmpty(chatName))
-            {
-                Console.WriteLine("Please enter chat name");
-                chatName = Console.ReadLine();
-            }
-
+            var userName = GetUserName(input);
+            var chatName = GetChatName(input);
             var result = _messenger.DeleteChat(userName, chatName);
             ShowUserPage(result);
         }
 
         public void ExitChat(string input)
         {
-            var userName = input.Split(' ')[1];
-            var chatName = input.Split(' ')[2];
-
-            if (string.IsNullOrEmpty(userName))
-            {
-                Console.WriteLine("Please enter your username");
-                userName = Console.ReadLine();
-            }
-
-            if (string.IsNullOrEmpty(chatName))
-            {
-                Console.WriteLine("Please enter chat name");
-                chatName = Console.ReadLine();
-            }
-
+            var userName = GetUserName(input);
+            var chatName = GetChatName(input);
             var result = _messenger.ExitChat(userName, chatName);
             ShowUserPage(result);
         }
 
         public void AddMessage(string input)
         {
-            var userName = input.Split(' ')[1];
-            var chatName = input.Split(' ')[2];
-            var textOfMessage = input.Split(' ')[3];
-            if (string.IsNullOrEmpty(userName))
-            {
-                Console.WriteLine("Please enter your username");
-                userName = Console.ReadLine();
-            }
-
-            if (string.IsNullOrEmpty(chatName))
-            {
-                Console.WriteLine("Please enter chat name");
-                chatName = Console.ReadLine();
-            }
-
-            if (string.IsNullOrEmpty(textOfMessage))
-            {
-                Console.WriteLine("Enter text of message");
-                textOfMessage = Console.ReadLine();
-            }
-
-           var result = _messenger.AddMessage(userName, chatName, textOfMessage);
-
+            var userName = GetUserName(input);
+            var chatName = GetChatName(input);
+            var textOfMessage = GetTextOfMessage(input);
+            var result = _messenger.AddMessage(userName, chatName, textOfMessage);
+            ShowChatPage(result.Item1, result.Item2, result.Item3);
         }
 
         public void DeleteMessage(string input)
         {
-            var userName = input.Split(' ')[1];
-            var chatName = input.Split(' ')[2];
-            var textOfMessage = input.Split(' ')[3];
-            if (string.IsNullOrEmpty(userName))
+            var userName = GetUserName(input);
+            var chatName = GetChatName(input);
+            var textOfMessage = GetTextOfMessage(input);
+            var result = _messenger.DeleteMessage(userName, chatName, textOfMessage);
+            ShowChatPage(result.Item1, result.Item2, result.Item3);
+        }
+
+        public void AddUserToChat(string input)
+        {
+            var userName = GetUserName(input);
+            var chatName = GetChatName(input);
+            var result = _messenger.AddUserToChat(userName, chatName);
+            ShowChatPage(result.Item1, result.Item2, result.Item3);
+        }
+
+        public string GetUserName(string input)
+        {
+            var parameters = input.Split(' ');
+            var userName = string.Empty;
+
+            if (parameters.Length > 1)
             {
-                Console.WriteLine("Please enter your username");
+                userName = parameters[1];
+            }
+            else
+            {
+                Console.WriteLine("Enter your username");
                 userName = Console.ReadLine();
             }
 
-            if (string.IsNullOrEmpty(chatName))
+            return userName;
+        }
+
+        public string GetChatName(string input)
+        {
+            var parameters = input.Split(' ');
+            var chatName = string.Empty;
+
+            if (parameters.Length > 2)
             {
-                Console.WriteLine("Please enter chat name");
+                chatName = parameters[2];
+            }
+            else
+            {
+                Console.WriteLine("Enter name of chat");
                 chatName = Console.ReadLine();
             }
 
-            if (string.IsNullOrEmpty(textOfMessage))
+            return chatName;
+        }
+
+        public string GetTextOfMessage(string input)
+        {
+            var parameters = input.Split(' ');
+            var textOfMessage = string.Empty;
+
+            if (parameters.Length > 3)
+            {
+                textOfMessage = parameters[3];
+            }
+            else
             {
                 Console.WriteLine("Enter text of message");
                 textOfMessage = Console.ReadLine();
             }
 
-            _messenger.DeleteMessage(userName, chatName, textOfMessage);
-        }
-
-        public void AddUserToChat(string input)
-        {
-            var userName = input.Split(' ')[1];
-            var chatName = input.Split(' ')[2];
-
-            if (string.IsNullOrEmpty(userName))
-            {
-                Console.WriteLine("Please enter your username");
-                userName = Console.ReadLine();
-            }
-
-            if (string.IsNullOrEmpty(chatName))
-            {
-                Console.WriteLine("Please enter chat name");
-                chatName = Console.ReadLine();
-            }
-
-            _messenger.AddUserToChat(userName, chatName);
+            return textOfMessage;
         }
     }
 }

@@ -7,10 +7,12 @@
 </head>
 <body>
     <span>Sign up </span>
-    <form name="myform" action="/signUp" method="get">
+    <form name="myform" action="/signUp" method="post">
         <input name="username" />
-        <input type="submit" value="SignUp" onclick="location.href='@Url.Action("SignUp", "SignIn")'"/>
+        <input type="submit" value="SignUp" onclick="redirectToAuthorizationPage();"/>
     </form>
-    
+    <script>
+        function redirectToAuthorizationPage() { window.location = "http://localhost:80/auth"}
+    </script>
 </body>
 </html>

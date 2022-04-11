@@ -1,6 +1,5 @@
 using Chat.Models;
 using Chat.Repositories;
-using Chat.Utils;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -59,7 +58,6 @@ namespace Chat
 
                     users.Add(user);
                     users.Save();
-
                     var action = new ChatAction(ChatActions.UserSignUp(user.Name));
                     actions.Add(action);
                     actions.Save();
@@ -99,7 +97,7 @@ namespace Chat
             }
         }
 
-        public (Chat,List<Message>, List<User>) OpenChat(string userName, string chatName)
+        public (Chat, List<Message>, List<User>) OpenChat(string userName, string chatName)
         {
             using (var scope = _serviceProvider.CreateScope())
             {
@@ -208,17 +206,18 @@ namespace Chat
             }
         }
 
-        public void AddUserToChat(string userName, string chatName)
+        public (Chat, List<Message>, List<User>) AddUserToChat(string userName, string chatName)
         {
             using (var scope = _serviceProvider.CreateScope())
             {
                 var chats = scope.ServiceProvider.GetRequiredService<IChatRepository>();
                 var users = scope.ServiceProvider.GetRequiredService<IUserRepository>();
-
+                var messages = scope.ServiceProvider.GetRequiredService<IMessageRepository>();
                 var chat = chats.GetChat(chatName);
                 var user = users.Get(userName);
                 chat.Users.Add(user);
                 chats.Save();
+                return (chat, messages.GetChatMessages(chat), users.GetAll().FindAll(i => chat.Users.Contains(i)));
             }
         }
 

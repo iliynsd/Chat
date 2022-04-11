@@ -47,6 +47,9 @@
       <None Update="SignUp.html">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
+      <None Update="Templates\index.html">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
       <None Update="UserPage.html">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
