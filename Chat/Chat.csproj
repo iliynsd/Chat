@@ -41,6 +41,9 @@
       <None Update="appSettings.json">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
+      <None Update="index.html">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
       <None Update="SignIn.html">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>

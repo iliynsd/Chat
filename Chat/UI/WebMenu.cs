@@ -1,16 +1,14 @@
 ﻿using Chat.Utils;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
 
 namespace Chat.UI
 {
-    public class Handler
-    {
-        public void Handle() { }
-    }
     public class WebMenu : IMenu
     {
+
         public void AddMessage(string input)
         {
             throw new System.NotImplementedException();
@@ -41,15 +39,14 @@ namespace Chat.UI
             throw new System.NotImplementedException();
         }
 
+
+
         public void IncorrectUserName()
         {
             throw new System.NotImplementedException();
         }
 
-        public void InvalidOperation()
-        {
-            throw new System.NotImplementedException();
-        }
+
 
         public void OpenChat(string input)
         {
@@ -73,14 +70,38 @@ namespace Chat.UI
 
         public void SignIn(string input)
         {
-            throw new System.NotImplementedException();
+
         }
 
         public void SignUp(string input)
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
+        public void Handle(Request request, HttpListenerResponse response)
+        {
+            string page = string.Empty;
 
+            if (request.method == "/")
+            {
+                response.Redirect("http://localhost:80/signIn");
+            }
+
+            if (request.method == "/signIn")
+            {
+                page = File.ReadAllText(@"Templates\index.html");
+            }
+            if(request.method.Contains)
+
+            if (request.method == "/signUp")
+            {
+                page = File.ReadAllText(@"Template\signUp.html");
+            }
+
+            using (var writer = new StreamWriter(response.OutputStream))
+            {
+                writer.WriteLine(page);
+            }
+        }
         public void Start()
         {
             HttpListener listener = new HttpListener();
@@ -89,30 +110,11 @@ namespace Chat.UI
 
             while (true)
             {
-                HttpListenerContext ctx = listener.GetContext();
-                HttpListenerRequest request = ctx.Request;
-                HttpListenerResponse response = ctx.Response;
-                string text = string.Empty;
-                if (request.RawUrl == "/signIn")
-                {
-                    text = File.ReadAllText(@"C:\Users\Administrator\source\repos\Chat\Chat\Templates\index.html");
-                }
-                else
-                {
-                    text = "hvukvk";
-                }
-
-                    using (var writer = new StreamWriter(response.OutputStream))
-                    {
-                        // stream.CopyTo(writer);
-                        writer.WriteLine(text);
-                    }
-                }
-
-            
-
-            listener.Stop();
-            listener.Close();
+                var context = listener.GetContext();
+                var request = RequestParser.Parse(context.Request);
+                var response = context.Response;
+                Handle(request, response);
+            }
         }
     }
 }
