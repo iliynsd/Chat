@@ -1,5 +1,4 @@
-﻿using Chat.Repositories;
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace Chat.Bots
@@ -11,7 +10,7 @@ namespace Chat.Bots
         private IChatActionBotService _chatActionService;
         private Dictionary<string, Func<string>> _botCommands;
 
-        public ClockBot(IMessageBotService messageService, IChatActionBotService chatActionService, IMessageRepository mes)
+        public ClockBot(IMessageBotService messageService, IChatActionBotService chatActionService)
         {
             _messageService = messageService;
             _chatActionService = chatActionService;
@@ -21,7 +20,6 @@ namespace Chat.Bots
                  {"early",() => DateTime.Now.AddMinutes(5).ToString()},
                  {"clockbot", () => DateTime.Now.ToString()}
              };
-            mes.GetAll().ForEach(i => Console.WriteLine(i.Id));
         }
 
         public void OnMessage(Message message)

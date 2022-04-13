@@ -9,10 +9,10 @@ namespace Chat
         public bool IsActive { get; set; }
         public virtual ICollection<User> Users { get; set; }
 
-        public Chat(string name, bool isActive)
+        public Chat(string name)
         {
             Name = name;
-            IsActive = isActive;
+            IsActive = true;
             Users = new List<User>();
         }
     }

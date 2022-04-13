@@ -23,7 +23,6 @@ namespace Chat.Repositories.PostgresRepositories
         public List<Message> GetChatMessages(Chat chat) => _dataContext.Messages.Where(i => i.IsActive).Where(i => i.ChatId == chat.Id).ToList();
 
 
-
         public bool IsChatNotEmpty(Chat chat) => _dataContext.Messages.Select(i => i.ChatId).Contains(chat.Id);
 
 

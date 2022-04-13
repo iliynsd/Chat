@@ -2,16 +2,13 @@ using Chat.Models;
 using Chat.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Chat
 {
-    public class Messenger : IHostedService
+    public class Messenger
     {
         private IServiceProvider _serviceProvider;
 
@@ -219,16 +216,6 @@ namespace Chat
                 chats.Save();
                 return (chat, messages.GetChatMessages(chat), users.GetAll().FindAll(i => chat.Users.Contains(i)));
             }
-        }
-
-        public async Task StartAsync(CancellationToken cancellationToken)
-        {
-
-        }
-
-        public async Task StopAsync(CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
         }
     }
 }

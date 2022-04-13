@@ -12,11 +12,11 @@ namespace Chat
         public string Name { get; set; }
         public bool IsActive { get; set; }
 
-        public User(string name, string type, bool isActive)
+        public User(string name, string type)
         {
             Name = name;
             Type = type;
-            IsActive = isActive;
+            IsActive = true;
             Chats = new List<Chat>();
         }
     }

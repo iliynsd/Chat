@@ -10,6 +10,7 @@
         <PackageReference Include="Microsoft.AspNetCore" Version="2.2.0" />
         <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="2.2.0" />
         <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.2.5" />
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="5.0.16" />
         <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.10" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="5.0.10">
           <PrivateAssets>all</PrivateAssets>
@@ -44,17 +45,14 @@
       <None Update="index.html">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
-      <None Update="SignIn.html">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </None>
-      <None Update="SignUp.html">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <None Update="Templates\createChat.html">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
       <None Update="Templates\index.html">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
-      <None Update="UserPage.html">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <None Update="Templates\signUp.html">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
     </ItemGroup>
 </Project>
