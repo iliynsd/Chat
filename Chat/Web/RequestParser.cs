@@ -29,5 +29,19 @@ namespace Chat
 
             }
         }
+
+        public static List<object> ParseParams(string request)
+        {
+            var parameteres = request.Split('&');
+            var result = new List<object>();
+
+            foreach (var param in parameteres)
+            {
+                result.Add(param.Split('=')[1]);
+            }
+
+            return result;
+        }
+
     }
 }

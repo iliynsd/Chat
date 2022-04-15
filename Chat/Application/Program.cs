@@ -5,6 +5,7 @@ using Chat.Repositories;
 using Chat.Repositories.PostgresRepositories;
 using Chat.UI;
 using Chat.Utils;
+using Chat.Web;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
