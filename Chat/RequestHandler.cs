@@ -114,16 +114,15 @@ namespace Chat
                 var chatName = parameters[2];
 
                 var result = _messenger.OpenChat(userName, chatName);
-                var head = "<html lang='en' xmlns='http://www.w3.org/1999/xhtml'><head><meta charset='UTF-8'><meta content='width=device-width, initial-scale=1.0'><style>ul.hr { margin: 0; padding: 4px; } ul.hr li { display: inline; margin - right: 5px; border: 1px solid #000; padding: 3px; } div.textField { margin: 0; padding: 0; font-size:20px; padding-left:90px; padding-top:16px; }</style></head>";
-                var body = $"<body><h1>{result.Item1.Name}</h1><ul class='hr'><li><button onclick='deleteChat();'>Delete chat</button></li><li><button onclick='redirectToUserPage();'>Close chat</button></li><li><button>Delete message</button></li><li><button onclick='addUserToChat();'>Add user to chat</button></li><li><button onclick='exitChat();'>Exit chat</button></li></ul><div style='padding-top:30px;'></div>";
+                var head = "<html lang='en' xmlns='http://www.w3.org/1999/xhtml'><head><meta charset='UTF-8'><meta content='width=device-width, initial-scale=1.0'><style>ul.hr { margin: 0; padding: 4px; } ul.hr li { display: inline; margin - right: 5px; border: 1px solid #000; padding: 3px; } div.textField { margin: 0; padding: 0; font-size:20px; padding-left:90px; padding-top:16px; } a.block-1 {font-size:22px;}</style></head>";
+                var body = $"<body><h1>{result.Item1.Name}</h1><ul class='hr'><li><button onclick='deleteChat();'>Delete chat</button></li><li><button onclick='redirectToUserPage();'>Close chat</button></li><li><button onclick='addUserToChat();'>Add user to chat</button></li><li><button onclick='exitChat();'>Exit chat</button></li></ul><div style='padding-top:30px;'></div><form action='/openChat/" + chatName + "/deleteMessage' method='post'><button id='del-mes'>Delete message</button>";
                 
                 foreach (var message in result.Item2)
                 {
-                    body += $"<div class='textField'>{result.Item3.Find(i => i.Id == message.UserId).Name} - {message.Text}  <button onclick='deleteMessage();'>Delete message</button>";
-                    body += "<script>function deleteMessage() { window.location='http://localhost:80/openChat/" + chatName + "/deleteMessage/"+ message.Text +"'; }</script></div>";
+                    body += $"<div class='textField'><a>{result.Item3.Find(i => i.Id == message.UserId).Name} - </a><a onclick='selectText();' class='block-1'>{message.Text}</a></div>";
                 }
 
-                var end = "<form style='padding-left:90px;' style='padding-top:10px' action='/openChat/" + chatName + "/addMessage' method='post'><input type='text' name='textOfMessage' required=''><button>Send</button></form><script>function redirectToUserPage() { window.location='http://localhost:80/userPage'; } </script><script>function deleteChat() { window.location='http://localhost:80/deleteChat/" + chatName + "'; } </script><script>function exitChat() { window.location='http://localhost:80/exitChat/" + chatName + "'; } </script><script>function addUserToChat() { window.location='http://localhost:80/openChat/" + chatName + "/addUserToChat.html'; }</script></body></html>";
+                var end = "<script>function selectText() { document.querySelector('.block-2').value = document.querySelector('.block-1').textContent; }) }</script><input class='block-2' name='textOfMessage' type='text' style='display:none;' ></form><form style='padding-left:90px;' style='padding-top:10px' action='/openChat/" + chatName + "/addMessage' method='post'><input type='text' name='textOfMessage' required=''><button>Send</button></form><script>function redirectToUserPage() { window.location='http://localhost:80/userPage'; } </script><script>function deleteChat() { window.location='http://localhost:80/deleteChat/" + chatName + "'; } </script><script>function exitChat() { window.location='http://localhost:80/exitChat/" + chatName + "'; } </script><script>function addUserToChat() { window.location='http://localhost:80/openChat/" + chatName + "/addUserToChat.html'; }</script></body></html>";
 
                 item = head + body + end;
                 response.Cookies.Add(new Cookie("chatName", chatName));
@@ -206,14 +205,13 @@ namespace Chat
             var userName = request.Cookies.First(i => i.Name == "userName").Value;
             var chatName = request.Cookies.First(i => i.Name == "chatName").Value;
 
-           
-            var parameters = request.RawUrl.Split('/');
-            if (parameters.Length == 5)
+            var rez = new StreamReader(request.InputStream).ReadLine();
+            Console.WriteLine(rez);
+            var parameters = RequestParser.ParseParams(request.InputStream);
+            if (parameters is not null)
             {
-                var textOfMessage = parameters[4];
-                Console.WriteLine(textOfMessage);
-                var a = _messenger.DeleteMessage(userName, chatName, textOfMessage);
-                Console.WriteLine(JsonConvert.SerializeObject(a, Formatting.Indented, new JsonSerializerSettings() { ReferenceLoopHandling = ReferenceLoopHandling.Ignore }));
+                var textOfMessage = parameters[0].ToString();
+                _messenger.DeleteMessage(userName, chatName, textOfMessage);
             }
             response.Redirect($"http://localhost:80/openChat/{chatName}");
             ResponseWriter.WriteResponse("", response.OutputStream);
