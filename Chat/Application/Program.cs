@@ -39,20 +39,15 @@ namespace Chat
                     serviceCollection.AddScoped<IHandler, RequestHandler>();
                     serviceCollection.AddSingleton<ServerHost>();
 
+                    serviceCollection.AddSingleton<IMessageBot, ClockBot>();
+                    serviceCollection.AddSingleton<IMessageBot, BotUploader>();
+                    serviceCollection.AddSingleton<IMessageBotService, MessageBotService>();
+                    serviceCollection.AddSingleton<IChatActionBotService, ChatActionBotService>();
+                    serviceCollection.AddSingleton<IGoToUrlBotService, GoToUrlBotService>();
+
 
                     serviceCollection.AddSingleton<Messenger>();
                 });
-        }
-
-        public static void RegistrateBotServices()
-        {
-            var serviceBotCollection = new ServiceCollection();
-            serviceBotCollection.AddSingleton<IMessageBot, ClockBot>();
-            serviceBotCollection.AddSingleton<IMessageBot, BotUploader>();
-            serviceBotCollection.AddSingleton<IMessageBotService, MessageBotService>();
-            serviceBotCollection.AddSingleton<IChatActionBotService, ChatActionBotService>();
-            serviceBotCollection.AddSingleton<IGoToUrlBotService, GoToUrlBotService>();
-            serviceBotCollection.BuildServiceProvider();
         }
     }
     //TODO сделать отдельный контейнер для ботов, насытить интерфейс он должен принимать url вызывать соответсвующий метод у интерфейса для разборки урла вынимать все параметры и вызывать методы messenger api типа SignIn(username)
