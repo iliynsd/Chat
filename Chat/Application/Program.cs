@@ -1,4 +1,5 @@
-﻿using Chat.Bots;
+﻿using Chat.AppOptions;
+using Chat.Bots;
 using Chat.BotServices;
 using Chat.Dal;
 using Chat.Repositories;
@@ -29,6 +30,8 @@ namespace Chat
 
                     serviceCollection.AddDbContext<DataContext>(options =>
                         options.UseLazyLoadingProxies().ConfigureWarnings(w => w.Ignore(CoreEventId.LazyLoadOnDisposedContextWarning)).UseNpgsql(hostContext.Configuration.GetConnectionString("DefaultConnection")));
+
+                    serviceCollection.Configure<Options>(hostContext.Configuration.GetSection(Options.ApplicationPath).Bind);
 
                     serviceCollection.AddSingleton<IMenu, WebMenu>();
                     serviceCollection.AddTransient<IMessageRepository, PostgresMessageRepository>();

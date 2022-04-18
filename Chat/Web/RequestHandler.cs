@@ -6,16 +6,17 @@ namespace Chat.Web
 {
     public partial class RequestHandler
     {
+        
         partial void Authorize(HttpListenerRequest request, HttpListenerResponse response)
         {
             var userName = request.Cookies.FirstOrDefault(i => i.Name == "userName")?.Value;
             if (userName is null)
             {
-                response.Redirect("http://localhost:80/signIn");
+                response.Redirect(_options.Protocol + _options.Host + _options.Port + "signIn");
             }
             else
             {
-                response.Redirect("http://localhost:80/userPage");
+                response.Redirect(_options.Protocol + _options.Host + _options.Port + "userPage");
             }
 
             ResponseWriter.WriteResponse("", response.OutputStream);
@@ -37,7 +38,7 @@ namespace Chat.Web
                 response.AppendCookie(cookie);
             }
 
-            response.Redirect("http://localhost:80/");
+            response.Redirect(_options.Protocol + _options.Host + _options.Port);
             ResponseWriter.WriteResponse("", response.OutputStream);
         }
 
@@ -57,11 +58,11 @@ namespace Chat.Web
 
             if (!signUp)
             {
-                response.Redirect("http://localhost:80/signUp");
+                response.Redirect(_options.Protocol + _options.Host + _options.Port + "signUp");
             }
             else
             {
-                response.Redirect("http://localhost:80/signIn");
+                response.Redirect(_options.Protocol + _options.Host + _options.Port + "signIn");
             }
 
             ResponseWriter.WriteResponse("", response.OutputStream);
@@ -82,11 +83,11 @@ namespace Chat.Web
             var chats = _messenger.CreateChat(userName, chat);
             if (chats is not null)
             {
-                response.Redirect("http://localhost:80/userPage");
+                response.Redirect(_options.Protocol + _options.Host + _options.Port + "userPage");
             }
             else
             {
-                response.Redirect("http://localhost:80/createChat");
+                response.Redirect(_options.Protocol + _options.Host + _options.Port + "createChat");
             }
 
             ResponseWriter.WriteResponse("", response.OutputStream);
@@ -132,7 +133,7 @@ namespace Chat.Web
             {
                 var chatName = parameters[2];
                 var result = _messenger.DeleteChat(userName, chatName);
-                response.Redirect("http://localhost:80/userPage");
+                response.Redirect(_options.Protocol + _options.Host + _options.Port + "userPage");
             }
 
             ResponseWriter.WriteResponse(item, response.OutputStream);
@@ -149,7 +150,7 @@ namespace Chat.Web
             {
                 var chatName = parameters[2];
                 var result = _messenger.ExitChat(userName, chatName);
-                response.Redirect($"http://localhost:80/openChat/{chatName}");
+                response.Redirect(_options.Protocol + _options.Host + _options.Port + $"openChat/{chatName}");
             }
 
             ResponseWriter.WriteResponse(item, response.OutputStream);
@@ -162,7 +163,7 @@ namespace Chat.Web
 
             var textOfMessage = RequestParser.ParseParams(request.InputStream)[0].ToString();
             var result = _messenger.AddMessage(userName, chatName, textOfMessage);
-            response.Redirect($"http://localhost:80/openChat/{chatName}");
+            response.Redirect(_options.Protocol + _options.Host + _options.Port + $"openChat/{chatName}");
             ResponseWriter.WriteResponse("", response.OutputStream);
         }
 
@@ -186,7 +187,7 @@ namespace Chat.Web
                 var userName = parameters[0].ToString();
                 var chatName = request.Cookies.FirstOrDefault(i => i.Name == "chatName").Value;
                 var result = _messenger.AddUserToChat(userName, chatName);
-                response.Redirect($"http://localhost:80/openChat/{chatName}");
+                response.Redirect(_options.Protocol + _options.Host + _options.Port + $"openChat/{chatName}");
                 ResponseWriter.WriteResponse(item, response.OutputStream);
             }
         }
@@ -203,7 +204,7 @@ namespace Chat.Web
                 _messenger.DeleteMessage(userName, chatName, textOfMessage);
             }
 
-            response.Redirect($"http://localhost:80/openChat/{chatName}");
+            response.Redirect(_options.Protocol + _options.Host + _options.Port + $"openChat/{chatName}");
             ResponseWriter.WriteResponse("", response.OutputStream);
         }
 

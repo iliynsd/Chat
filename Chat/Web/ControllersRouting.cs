@@ -1,15 +1,26 @@
-﻿using System.Linq;
+﻿using Chat.AppOptions;
+using Microsoft.Extensions.Options;
+using System;
+using System.Linq;
 using System.Net;
+using System.Text.RegularExpressions;
 
 namespace Chat.Web
 {
    public partial class RequestHandler : IHandler
     {
         private Messenger _messenger;
+        private AppOptions.Options _options;
+        private string Root = "/";
+        private string RootRequestWithParamsTemplate(string method) => @$"/{method}\w*";
+        private string RootRequestTemplate(string method) => @$"^/{method}$";
+        private string OpenChatPageRequest => @"/openChat/\w*$";
+        private string ChatPageRequests(string method) => @$"/openChat/\w*/{method}\w*";
 
-        public RequestHandler(Messenger messenger)
+        public RequestHandler(Messenger messenger, IOptions<AppOptions.Options> options)
         {
             _messenger = messenger;
+            _options = options.Value;
         }
 
         partial void Authorize(HttpListenerRequest request, HttpListenerResponse response);
@@ -30,64 +41,64 @@ namespace Chat.Web
 
         public void Handle(HttpListenerRequest request, HttpListenerResponse response)
         {
-            if (request.RawUrl == "/")
+            if (request.RawUrl == Root)
             {
                 Authorize(request, response);
             }
-            if (request.RawUrl == "/signIn")
+            if (Regex.IsMatch(request.RawUrl, RootRequestTemplate("signIn")))
             {
                 ShowSignInPage(request, response);
             }
-            if (request.RawUrl == "/signUp")
+            if (Regex.IsMatch(request.RawUrl, RootRequestTemplate("signUp")))
             {
                 ShowSignUpPage(request, response);
             }
-            if (request.RawUrl == "/createChat")
+            if (Regex.IsMatch(request.RawUrl, RootRequestTemplate("createChat")))
             {
                 ShowCreateChatPage(request, response);
             }
-            if (request.RawUrl == "/makeChat")
+            if (Regex.IsMatch(request.RawUrl, RootRequestTemplate("makeChat")))
             {
                 CreateChat(request, response);
             }
-            if (request.RawUrl.Contains("/openChat") && request.RawUrl.Count(i => i == '/') == 2)
+            if (Regex.IsMatch(request.RawUrl, OpenChatPageRequest))
             {
                 OpenChat(request, response);
             }
-            if (request.RawUrl.Contains("/deleteChat"))
+            if (Regex.IsMatch(request.RawUrl, RootRequestWithParamsTemplate("deleteChat")))
             {
                 DeleteChat(request, response);
             }
-            if (request.RawUrl.Contains("/exitChat"))
+            if (Regex.IsMatch(request.RawUrl, RootRequestWithParamsTemplate("exitChat")))
             {
                 ExitChat(request, response);
             }
-            if (request.RawUrl.Contains("/addMessage"))
+            if (Regex.IsMatch(request.RawUrl, ChatPageRequests("addMessage")))
             {
                 AddMessage(request, response);
             }
-            if (request.RawUrl.Contains("/addUserToChat.html"))
+            if (Regex.IsMatch(request.RawUrl, ChatPageRequests("addUserToChat.html")))
             {
                 ShowAddUserToChatPage(request, response);
             }
-
-            if (request.RawUrl.Contains("/addUserToChat"))
+            
+            if (Regex.IsMatch(request.RawUrl, ChatPageRequests("addUserToChat")))
             {
                 AddUserToChat(request, response);
             }
-            if (request.RawUrl.Contains("/deleteMessage"))
+            if (Regex.IsMatch(request.RawUrl, ChatPageRequests("deleteMessage")))
             {
                 DeleteMessage(request, response);
             }
-            if (request.RawUrl == "/userPage")
+            if (Regex.IsMatch(request.RawUrl, RootRequestTemplate("userPage")))
             {
                 ShowUserPage(request, response);
             }
-            if (request.RawUrl == "/createSession")
+            if (Regex.IsMatch(request.RawUrl, RootRequestTemplate("createSession")))
             {
                 SignIn(request, response);
             }
-            if (request.RawUrl == "/createAccount")
+            if (Regex.IsMatch(request.RawUrl, RootRequestTemplate("createAccount")))
             {
                 SignUp(request, response);
             }
