@@ -63,7 +63,7 @@ namespace Chat
             }
         }
 
-        public (Chat, List<Message>, List<User>) AddMessage(string userName, string chatName, string textOfMessage)
+        public (Chat chat, List<Message> messages, List<User> users) AddMessage(string userName, string chatName, string textOfMessage)
         {
             using (var scope = _serviceProvider.CreateScope())
             {
@@ -94,7 +94,7 @@ namespace Chat
             }
         }
 
-        public (Chat, List<Message>, List<User>) OpenChat(string userName, string chatName)
+        public (Chat chat, List<Message> messages, List<User> users) OpenChat(string userName, string chatName)
         {
             using (var scope = _serviceProvider.CreateScope())
             {
@@ -142,7 +142,7 @@ namespace Chat
         }
 
 
-        public (Chat, List<Message>, List<User>) DeleteMessage(string userName, string chatName, string textOfMessage)
+        public (Chat chat, List<Message> messages, List<User> users) DeleteMessage(string userName, string chatName, string textOfMessage)
         {
             using (var scope = _serviceProvider.CreateScope())
             {
@@ -203,7 +203,7 @@ namespace Chat
             }
         }
 
-        public (Chat, List<Message>, List<User>) AddUserToChat(string userName, string chatName)
+        public (Chat chat, List<Message> messages, List<User> users) AddUserToChat(string userName, string chatName)
         {
             using (var scope = _serviceProvider.CreateScope())
             {

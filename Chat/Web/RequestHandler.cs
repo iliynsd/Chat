@@ -95,8 +95,7 @@ namespace Chat.Web
 
         partial void OpenChat(HttpListenerRequest request, HttpListenerResponse response)
         {
-            var item = new object();
-
+            var responsePage = "Not found";
             var userName = request.Cookies.First(i => i.Name == "userName").Value;
             var parameters = request.RawUrl.Split('/');
 
@@ -106,54 +105,52 @@ namespace Chat.Web
 
                 var result = _messenger.OpenChat(userName, chatName);
                 var head = "<html lang='en' xmlns='http://www.w3.org/1999/xhtml'><head><meta charset='UTF-8'><meta content='width=device-width, initial-scale=1.0'><style>ul.hr { margin: 0; padding: 4px; } ul.hr li { display: inline; margin - right: 5px; border: 1px solid #000; padding: 3px; } div.textField { margin: 0; padding: 0; font-size:20px; padding-left:90px; padding-top:16px; } a.block-1 {font-size:22px;}</style></head>";
-                var body = $"<body><h1>{result.Item1.Name}</h1><ul class='hr'><li><button onclick='deleteChat();'>Delete chat</button></li><li><button onclick='redirectToUserPage();'>Close chat</button></li><li><button onclick='addUserToChat();'>Add user to chat</button></li><li><button onclick='exitChat();'>Exit chat</button></li></ul><div style='padding-top:30px;'></div>";
+                var body = $"<body><h1>{result.chat.Name}</h1><ul class='hr'><li><button onclick='deleteChat();'>Delete chat</button></li><li><button onclick='redirectToUserPage();'>Close chat</button></li><li><button onclick='addUserToChat();'>Add user to chat</button></li><li><button onclick='exitChat();'>Exit chat</button></li></ul><div style='padding-top:30px;'></div>";
 
-                foreach (var message in result.Item2)
+                foreach (var message in result.messages)
                 {
-                    body += $"<div class='textField'><a>{result.Item3.Find(i => i.Id == message.UserId).Name} - </a><a>{message.Text}</a><button onclick='deleteMessage();'> Delete message </button></div> ";
-                    body += "<script>function deleteMessage() { window.location='http://localhost:80/openChat/" + chatName + "/deleteMessage?textOfMessage=" + message.Text + "'; }</script></div>";
+                    body += $"<div class='textField'><a>{result.users.Find(i => i.Id == message.UserId).Name} - </a><a>{message.Text}</a><button onclick='deleteMessage();'> Delete message </button></div> ";
+                    body += "<script>function deleteMessage() { window.location='" +_options.Protocol + _options.Host + _options.Port + "openChat/" + chatName + "/deleteMessage?textOfMessage=" + message.Text + "'; }</script></div>";
                 }
 
-                var end = "<form style='padding-left:90px;' style='padding-top:10px' action='/openChat/" + chatName + "/addMessage' method='post'><input type='text' name='textOfMessage' required=''><button>Send</button></form><script>function redirectToUserPage() { window.location='http://localhost:80/userPage'; } </script><script>function deleteChat() { window.location='http://localhost:80/deleteChat/" + chatName + "'; } </script><script>function exitChat() { window.location='http://localhost:80/exitChat/" + chatName + "'; } </script><script>function addUserToChat() { window.location='http://localhost:80/openChat/" + chatName + "/addUserToChat.html'; }</script></body></html>";
+                var end = "<form style='padding-left:90px;' style='padding-top:10px' action='/openChat/" + chatName + "/addMessage' method='post'><input type='text' name='textOfMessage' required=''><button>Send</button></form><script>function redirectToUserPage() { window.location='" + _options.Protocol + _options.Host + _options.Port + "userPage'; } </script><script>function deleteChat() { window.location='" +_options.Protocol + _options.Host +_options.Port + "deleteChat/" + chatName + "'; } </script><script>function exitChat() { window.location='" + _options.Protocol + _options.Host + _options.Port + "exitChat/" + chatName + "'; } </script><script>function addUserToChat() { window.location='" + _options.Protocol + _options.Host + _options.Port + "openChat/" + chatName + "/addUserToChat.html'; }</script></body></html>";
 
-                item = head + body + end;
+                responsePage = head + body + end;
                 response.Cookies.Add(new Cookie("chatName", chatName));
             }
 
-            ResponseWriter.WriteResponse(item, response.OutputStream);
+            ResponseWriter.WriteResponse(responsePage, response.OutputStream);
         }
 
         partial void DeleteChat(HttpListenerRequest request, HttpListenerResponse response)
         {
-            var item = new object();
             var userName = request.Cookies.First(i => i.Name == "userName").Value;
             var parameters = request.RawUrl.Split('/');
 
             if (parameters.Length == 3)
             {
                 var chatName = parameters[2];
-                var result = _messenger.DeleteChat(userName, chatName);
+                _messenger.DeleteChat(userName, chatName);
                 response.Redirect(_options.Protocol + _options.Host + _options.Port + "userPage");
             }
 
-            ResponseWriter.WriteResponse(item, response.OutputStream);
+            ResponseWriter.WriteResponse("", response.OutputStream);
         }
 
 
         partial void ExitChat(HttpListenerRequest request, HttpListenerResponse response)
         {
-            var item = new object();
             var userName = request.Cookies.First(i => i.Name == "userName").Value;
             var parameters = request.RawUrl.Split('/');
 
             if (parameters.Length == 3)
             {
                 var chatName = parameters[2];
-                var result = _messenger.ExitChat(userName, chatName);
+               _messenger.ExitChat(userName, chatName);
                 response.Redirect(_options.Protocol + _options.Host + _options.Port + $"openChat/{chatName}");
             }
 
-            ResponseWriter.WriteResponse(item, response.OutputStream);
+            ResponseWriter.WriteResponse("", response.OutputStream);
         }
 
         partial void AddMessage(HttpListenerRequest request, HttpListenerResponse response)
@@ -162,7 +159,7 @@ namespace Chat.Web
             var chatName = request.Cookies.First(i => i.Name == "chatName").Value;
 
             var textOfMessage = RequestParser.ParseParams(request.InputStream)[0].ToString();
-            var result = _messenger.AddMessage(userName, chatName, textOfMessage);
+            _messenger.AddMessage(userName, chatName, textOfMessage);
             response.Redirect(_options.Protocol + _options.Host + _options.Port + $"openChat/{chatName}");
             ResponseWriter.WriteResponse("", response.OutputStream);
         }
@@ -175,7 +172,6 @@ namespace Chat.Web
 
         partial void AddUserToChat(HttpListenerRequest request, HttpListenerResponse response)
         {
-            var item = new object();
             var parameters = RequestParser.ParseParams(request.InputStream);
 
             if (parameters is null)
@@ -186,9 +182,9 @@ namespace Chat.Web
             {
                 var userName = parameters[0].ToString();
                 var chatName = request.Cookies.FirstOrDefault(i => i.Name == "chatName").Value;
-                var result = _messenger.AddUserToChat(userName, chatName);
+                _messenger.AddUserToChat(userName, chatName);
                 response.Redirect(_options.Protocol + _options.Host + _options.Port + $"openChat/{chatName}");
-                ResponseWriter.WriteResponse(item, response.OutputStream);
+                ResponseWriter.WriteResponse("", response.OutputStream);
             }
         }
 
@@ -213,7 +209,7 @@ namespace Chat.Web
             var userName = request.Cookies.FirstOrDefault(i => i.Name == "userName")?.Value;
             var chatNames = _messenger.SignIn(userName)?.Select(i => i.Name);
 
-            var head = "<html lang='en' xmlns='http://www.w3.org/1999/xhtml'><head><meta charset='UTF-8'><meta content='width=device-width, initial-scale=1.0'><style>ul.hr { margin: 0; padding: 4px; } ul.hr li { display: inline; margin - right: 5px; border: 1px solid #000; padding: 3px; }</style></head><body><h1>User page</h1><ul class='hr'><li><a href='createChat'>Create chat</a></li><li><a href='http://localhost:80/'>Sign out</a></li></ul>";
+            var head = "<html lang='en' xmlns='http://www.w3.org/1999/xhtml'><head><meta charset='UTF-8'><meta content='width=device-width, initial-scale=1.0'><style>ul.hr { margin: 0; padding: 4px; } ul.hr li { display: inline; margin - right: 5px; border: 1px solid #000; padding: 3px; }</style></head><body><h1>User page</h1><ul class='hr'><li><a href='createChat'>Create chat</a></li><li>" + $"<a href='{_options.Protocol + _options.Host + _options.Port}'>Sign out</a></li></ul>";
             var body = "<ul>";
             foreach (var chatName in chatNames)
             {

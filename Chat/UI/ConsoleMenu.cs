@@ -165,7 +165,7 @@ namespace Chat.Utils
             var userName = GetUserName(input);
             var chatName = GetChatName(input);
             var result = _messenger.OpenChat(userName, chatName);
-            ShowChatMenu(result.Item1, result.Item2, result.Item3);
+            ShowChatMenu(result.chat, result.messages, result.users);
         }
 
         private void CloseChat(string input)
@@ -209,7 +209,7 @@ namespace Chat.Utils
             var chatName = GetChatName(input);
             var textOfMessage = GetTextOfMessage(input);
             var result = _messenger.AddMessage(userName, chatName, textOfMessage);
-            ShowChatMenu(result.Item1, result.Item2, result.Item3);
+            ShowChatMenu(result.chat, result.messages, result.users);
         }
 
         private void DeleteMessage(string input)
@@ -218,7 +218,7 @@ namespace Chat.Utils
             var chatName = GetChatName(input);
             var textOfMessage = GetTextOfMessage(input);
             var result = _messenger.DeleteMessage(userName, chatName, textOfMessage);
-            ShowChatMenu(result.Item1, result.Item2, result.Item3);
+            ShowChatMenu(result.chat, result.messages, result.users);
         }
 
         private void AddUserToChat(string input)
@@ -226,7 +226,7 @@ namespace Chat.Utils
             var userName = GetUserName(input);
             var chatName = GetChatName(input);
             var result = _messenger.AddUserToChat(userName, chatName);
-            ShowChatMenu(result.Item1, result.Item2, result.Item3);
+            ShowChatMenu(result.chat, result.messages, result.users);
         }
 
         private string GetUserName(string input)
