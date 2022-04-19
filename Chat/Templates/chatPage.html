@@ -39,7 +39,7 @@
         }
     </style>
 </head>
-<body>
+<body onload="createMessages('<!--NumMes-->', '<!--Messages-->');">
     <h1><!--ChatName--></h1>
     <ul class='hr'>
         <li><button onclick='deleteChat();'>Delete chat</button></li>
@@ -47,8 +47,8 @@
         <li><button onclick='addUserToChat();'>Add user to chat</button></li>
         <li><button onclick='exitChat();'>Exit chat</button></li>
     </ul>
-    <div class='textField'>
-        <!--Messages-->
+    <div id="messages" class='textField'>
+        
     </div>
 
     <form class="addMes" action='/openChat/<!--ChatName-->/addMessage' method='post'>
@@ -61,5 +61,23 @@
     <script>function deleteChat() { window.location = '/deleteChat/<!--ChatName-->'; }</script>
     <script>function exitChat() { window.location = '/exitChat/<!--ChatName-->'; }</script>
     <script>function addUserToChat() { window.location = '/openChat/<!--ChatName-->/addUserToChat.html'; }</script>
+    <script>
+        function createMessages(num, messages) {
+            let i = 0;
+            while (i < num) {
+                var rez = messages.split(';');
+                var div = document.createElement('div');
+                div.className = "mes";
+                div.id = i;
+                var a = document.createElement('a');
+                a.innerHTML = rez[i];
+                //var button = document.createElement('button');
+               // button.onclick = "deleteMessage(message.Id);";
+                div.append(a);
+                messages.prepend(div);
+                i++;
+            }
+        }
+    </script>
 </body>
 </html>

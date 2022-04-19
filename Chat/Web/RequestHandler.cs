@@ -110,10 +110,12 @@ namespace Chat.Web
                 var result = _messenger.OpenChat(userName, chatName);
                 responsePage = File.ReadAllText(@"Templates\chatPage.html");
                 var messages = string.Empty;
+                responsePage = responsePage.Replace("'<!--NumMes-->'", result.messages.Count().ToString());
 
                 foreach (var message in result.messages)
                 {
-                    messages += $"<div class='mes'><a>{result.users.Find(i => i.Id == message.UserId).Name} - {message.Text}</a><button onclick='deleteMessage({message.Id});'>Delete message</button></div>";
+                    messages += $"{result.users.Find(i => i.Id == message.UserId).Name} - {message.Text}";
+                    messages += ';';
                 }
 
                 responsePage =  responsePage.Replace(Messages, messages);
@@ -211,10 +213,12 @@ namespace Chat.Web
             var chatNames = _messenger.SignIn(userName)?.Select(i => i.Name);
             var responsePage = File.ReadAllText(@"Templates\userPage.html");
             var chats = string.Empty;
+            responsePage = responsePage.Replace("'<!--NumChats-->'", chatNames.Count().ToString());
 
-            foreach (var chatName in chatNames)
+            foreach(var chat in chatNames)
             {
-                chats += $"<div class='chat'><a href='openChat/{chatName}'>{chatName}</a></div>";
+                chats += chat;
+                chats += ';';
             }
 
             responsePage = responsePage.Replace(Chats, chats);

@@ -22,18 +22,34 @@
             }
     </style>
 </head>
-<body>
+<body onload="createChats('<!--NumChats-->', '<!--Chats-->');">
     <h1><!--UserName--> page</h1>
 
     <ul class='hr'>
         <li><button onclick="redirectToCreateChat();">Create chat</button></li>
         <li><button onclick=" redirectToAuthorization();">Sign out</button></li>
     </ul>
-    <div>
-        <!--Chats-->
+    <div id="chats">
+       
     </div>
 
     <script>function redirectToCreateChat() { window.location = '/createChat'; }</script>
     <script>function redirectToAuthorization() { window.location = '/'; }</script>
+    <script>function createChats(num, chatNames) {
+    let i = 0;
+    while (i < num) {
+        var rez = chatNames.split(';');
+        var div = document.createElement('div');
+        div.className = "chat";
+        div.id = i;
+        var a = document.createElement('a');
+        a.innerHTML = rez[i];
+        a.href = "/openChat/" + rez[i];
+        div.append(a);
+        chats.prepend(div);
+        i++;
+    }
+
+ }</script>
 </body>
 </html>
