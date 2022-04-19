@@ -109,8 +109,8 @@ namespace Chat.Web
 
                 foreach (var message in result.messages)
                 {
-                    body += $"<div class='textField'><a>{result.users.Find(i => i.Id == message.UserId).Name} - </a><a>{message.Text}</a><button onclick='deleteMessage();'> Delete message </button></div> ";
-                    body += "<script>function deleteMessage() { window.location='" +_options.Protocol + _options.Host + _options.Port + "openChat/" + chatName + "/deleteMessage?textOfMessage=" + message.Text + "'; }</script></div>";
+                    body += $"<div class='textField'><a>{result.users.Find(i => i.Id == message.UserId).Name} - {message.Text}</a><button onclick='deleteMessage{message.Id}();'> Delete message </button></div>";
+                    body += "<script>function deleteMessage" + message.Id + "() { window.location='" +_options.Protocol + _options.Host + _options.Port + "openChat/" + chatName + "/deleteMessage?textOfMessage=" + message.Text + "'; }</script>";
                 }
 
                 var end = "<form style='padding-left:90px;' style='padding-top:10px' action='/openChat/" + chatName + "/addMessage' method='post'><input type='text' name='textOfMessage' required=''><button>Send</button></form><script>function redirectToUserPage() { window.location='" + _options.Protocol + _options.Host + _options.Port + "userPage'; } </script><script>function deleteChat() { window.location='" +_options.Protocol + _options.Host +_options.Port + "deleteChat/" + chatName + "'; } </script><script>function exitChat() { window.location='" + _options.Protocol + _options.Host + _options.Port + "exitChat/" + chatName + "'; } </script><script>function addUserToChat() { window.location='" + _options.Protocol + _options.Host + _options.Port + "openChat/" + chatName + "/addUserToChat.html'; }</script></body></html>";
@@ -136,7 +136,6 @@ namespace Chat.Web
 
             ResponseWriter.WriteResponse("", response.OutputStream);
         }
-
 
         partial void ExitChat(HttpListenerRequest request, HttpListenerResponse response)
         {

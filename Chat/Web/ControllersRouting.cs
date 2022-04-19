@@ -41,6 +41,8 @@ namespace Chat.Web
 
         public void Handle(HttpListenerRequest request, HttpListenerResponse response)
         {
+            Console.WriteLine(request.RawUrl);
+
             if (request.RawUrl == Root)
             {
                 Authorize(request, response);
