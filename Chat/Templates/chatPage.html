@@ -1,0 +1,65 @@
+﻿<!DOCTYPE html>
+
+<html lang='en' xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+    <meta charset='UTF-8'>
+    <meta content='width=device-width, initial-scale=1.0'>
+    <style>
+        ul.hr {
+            margin: 0;
+            padding: 4px;
+            padding-top: 30px;
+        }
+
+            ul.hr li {
+                display: inline;
+                margin-right: 5px;
+                padding: 3px;
+            }
+
+        div.textField {
+            margin: 0;
+            padding: 0;
+            font-size: 20px;
+            padding-left: 90px;
+            padding-top: 16px;
+        }
+
+        div.mes {
+            padding-top: 10px;
+        }
+
+        a.block-1 {
+            font-size: 22px;
+        }
+
+        form.addMes {
+            padding-left: 90px;
+            padding-top: 10px
+        }
+    </style>
+</head>
+<body>
+    <h1><!--ChatName--></h1>
+    <ul class='hr'>
+        <li><button onclick='deleteChat();'>Delete chat</button></li>
+        <li><button onclick='redirectToUserPage();'>Close chat</button></li>
+        <li><button onclick='addUserToChat();'>Add user to chat</button></li>
+        <li><button onclick='exitChat();'>Exit chat</button></li>
+    </ul>
+    <div class='textField'>
+        <!--Messages-->
+    </div>
+
+    <form class="addMes" action='/openChat/<!--ChatName-->/addMessage' method='post'>
+        <input type='text' name='textOfMessage' required=''>
+        <button>Send</button>
+    </form>
+
+    <script>function deleteMessage(mesId) { window.location = ('/openChat/<!--ChatName-->/deleteMessage?id=' + mesId); }</script>
+    <script>function redirectToUserPage() { window.location = '/userPage'; }</script>
+    <script>function deleteChat() { window.location = '/deleteChat/<!--ChatName-->'; }</script>
+    <script>function exitChat() { window.location = '/exitChat/<!--ChatName-->'; }</script>
+    <script>function addUserToChat() { window.location = '/openChat/<!--ChatName-->/addUserToChat.html'; }</script>
+</body>
+</html>

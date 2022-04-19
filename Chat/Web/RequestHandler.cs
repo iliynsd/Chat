@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Linq;
 using System.Net;
 
@@ -6,7 +7,11 @@ namespace Chat.Web
 {
     public partial class RequestHandler
     {
-        
+        private const string Messages = "<!--Messages-->";
+        private const string ChatName = "<!--ChatName-->";
+        private const string UserName = "<!--UserName-->";
+        private const string Chats = "<!--Chats-->";
+
         partial void Authorize(HttpListenerRequest request, HttpListenerResponse response)
         {
             var userName = request.Cookies.FirstOrDefault(i => i.Name == "userName")?.Value;
@@ -102,20 +107,17 @@ namespace Chat.Web
             if (parameters.Length == 3)
             {
                 var chatName = parameters[2];
-
                 var result = _messenger.OpenChat(userName, chatName);
-                var head = "<html lang='en' xmlns='http://www.w3.org/1999/xhtml'><head><meta charset='UTF-8'><meta content='width=device-width, initial-scale=1.0'><style>ul.hr { margin: 0; padding: 4px; } ul.hr li { display: inline; margin - right: 5px; border: 1px solid #000; padding: 3px; } div.textField { margin: 0; padding: 0; font-size:20px; padding-left:90px; padding-top:16px; } a.block-1 {font-size:22px;}</style></head>";
-                var body = $"<body><h1>{result.chat.Name}</h1><ul class='hr'><li><button onclick='deleteChat();'>Delete chat</button></li><li><button onclick='redirectToUserPage();'>Close chat</button></li><li><button onclick='addUserToChat();'>Add user to chat</button></li><li><button onclick='exitChat();'>Exit chat</button></li></ul><div style='padding-top:30px;'></div>";
+                responsePage = File.ReadAllText(@"Templates\chatPage.html");
+                var messages = string.Empty;
 
                 foreach (var message in result.messages)
                 {
-                    body += $"<div class='textField'><a>{result.users.Find(i => i.Id == message.UserId).Name} - {message.Text}</a><button onclick='deleteMessage{message.Id}();'> Delete message </button></div>";
-                    body += "<script>function deleteMessage" + message.Id + "() { window.location='" +_options.Protocol + _options.Host + _options.Port + "openChat/" + chatName + "/deleteMessage?textOfMessage=" + message.Text + "'; }</script>";
+                    messages += $"<div class='mes'><a>{result.users.Find(i => i.Id == message.UserId).Name} - {message.Text}</a><button onclick='deleteMessage({message.Id});'>Delete message</button></div>";
                 }
 
-                var end = "<form style='padding-left:90px;' style='padding-top:10px' action='/openChat/" + chatName + "/addMessage' method='post'><input type='text' name='textOfMessage' required=''><button>Send</button></form><script>function redirectToUserPage() { window.location='" + _options.Protocol + _options.Host + _options.Port + "userPage'; } </script><script>function deleteChat() { window.location='" +_options.Protocol + _options.Host +_options.Port + "deleteChat/" + chatName + "'; } </script><script>function exitChat() { window.location='" + _options.Protocol + _options.Host + _options.Port + "exitChat/" + chatName + "'; } </script><script>function addUserToChat() { window.location='" + _options.Protocol + _options.Host + _options.Port + "openChat/" + chatName + "/addUserToChat.html'; }</script></body></html>";
-
-                responsePage = head + body + end;
+                responsePage =  responsePage.Replace(Messages, messages);
+                responsePage = responsePage.Replace(ChatName, chatName);
                 response.Cookies.Add(new Cookie("chatName", chatName));
             }
 
@@ -145,7 +147,7 @@ namespace Chat.Web
             if (parameters.Length == 3)
             {
                 var chatName = parameters[2];
-               _messenger.ExitChat(userName, chatName);
+                _messenger.ExitChat(userName, chatName);
                 response.Redirect(_options.Protocol + _options.Host + _options.Port + $"openChat/{chatName}");
             }
 
@@ -193,10 +195,10 @@ namespace Chat.Web
             var chatName = request.Cookies.First(i => i.Name == "chatName").Value;
 
             var parameters = RequestParser.ParseParams(request.RawUrl);
-            if (parameters.Count >0)
+            if (parameters.Count > 0)
             {
-                var textOfMessage = parameters[0].ToString();
-                _messenger.DeleteMessage(userName, chatName, textOfMessage);
+                var messageId = Convert.ToInt32(parameters[0]);
+                _messenger.DeleteMessage(userName, chatName, messageId);
             }
 
             response.Redirect(_options.Protocol + _options.Host + _options.Port + $"openChat/{chatName}");
@@ -207,16 +209,17 @@ namespace Chat.Web
         {
             var userName = request.Cookies.FirstOrDefault(i => i.Name == "userName")?.Value;
             var chatNames = _messenger.SignIn(userName)?.Select(i => i.Name);
+            var responsePage = File.ReadAllText(@"Templates\userPage.html");
+            var chats = string.Empty;
 
-            var head = "<html lang='en' xmlns='http://www.w3.org/1999/xhtml'><head><meta charset='UTF-8'><meta content='width=device-width, initial-scale=1.0'><style>ul.hr { margin: 0; padding: 4px; } ul.hr li { display: inline; margin - right: 5px; border: 1px solid #000; padding: 3px; }</style></head><body><h1>User page</h1><ul class='hr'><li><a href='createChat'>Create chat</a></li><li>" + $"<a href='{_options.Protocol + _options.Host + _options.Port}'>Sign out</a></li></ul>";
-            var body = "<ul>";
             foreach (var chatName in chatNames)
             {
-                body += $"<li><a href='openChat/{chatName}'>{chatName}</a></li>";
+                chats += $"<div class='chat'><a href='openChat/{chatName}'>{chatName}</a></div>";
             }
-            var end = "</ul></body></html>";
-            var file = head + body + end;
-            ResponseWriter.WriteResponse(file, response.OutputStream);
+
+            responsePage = responsePage.Replace(Chats, chats);
+            responsePage = responsePage.Replace(UserName, userName);
+            ResponseWriter.WriteResponse(responsePage, response.OutputStream);
         }
     }
 }

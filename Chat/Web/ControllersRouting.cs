@@ -1,13 +1,11 @@
-﻿using Chat.AppOptions;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using System;
-using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
 
 namespace Chat.Web
 {
-   public partial class RequestHandler : IHandler
+    public partial class RequestHandler : IHandler
     {
         private Messenger _messenger;
         private AppOptions.Options _options;
@@ -83,7 +81,7 @@ namespace Chat.Web
             {
                 ShowAddUserToChatPage(request, response);
             }
-            
+
             if (Regex.IsMatch(request.RawUrl, ChatPageRequests("addUserToChat")))
             {
                 AddUserToChat(request, response);
