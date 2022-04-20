@@ -11,6 +11,8 @@ namespace Chat.Web
         private const string ChatName = "<!--ChatName-->";
         private const string UserName = "<!--UserName-->";
         private const string Chats = "<!--Chats-->";
+        private const string NumMes = "<!--NumMes-->";
+        private const string MessagesIds = "<!--MesIds-->";
 
         partial void Authorize(HttpListenerRequest request, HttpListenerResponse response)
         {
@@ -110,7 +112,7 @@ namespace Chat.Web
                 var result = _messenger.OpenChat(userName, chatName);
                 responsePage = File.ReadAllText(@"Templates\chatPage.html");
                 var messages = string.Empty;
-                responsePage = responsePage.Replace("'<!--NumMes-->'", result.messages.Count().ToString());
+                responsePage = responsePage.Replace(NumMes, result.messages.Count().ToString());
 
                 foreach (var message in result.messages)
                 {
@@ -118,6 +120,14 @@ namespace Chat.Web
                     messages += ';';
                 }
 
+                var messagesIds = string.Empty;
+                foreach(var id in result.messages.Select(i => i.Id))
+                {
+                    messagesIds += id;
+                    messagesIds += ';';
+                }
+
+                responsePage = responsePage.Replace(MessagesIds, messagesIds);
                 responsePage =  responsePage.Replace(Messages, messages);
                 responsePage = responsePage.Replace(ChatName, chatName);
                 response.Cookies.Add(new Cookie("chatName", chatName));
