@@ -72,8 +72,7 @@
                 var a = document.createElement('a');
                 a.innerHTML = rez[i];
                 var button = document.createElement('button');
-
-                button.onclick = deleteMessage(ids[i]);
+                button.addEventListener('click', function () { deleteMessage(this.parentElement.id); }, false);
                 button.innerHTML = "Delete message";
                 div.append(a);
                 div.append(button);
@@ -86,6 +85,5 @@
             window.location = ('/openChat/<!--ChatName-->/deleteMessage?id=' + id);
         }
     </script>
-    
 </body>
 </html>
