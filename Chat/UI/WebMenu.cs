@@ -13,10 +13,10 @@ namespace Chat.UI
             _serviceProvider = serviceProvider;
         }
 
-        public void Start()
+        public async void Start()
         {
             var server = _serviceProvider.GetRequiredService<ServerHost>();
-            server.Start();
+            await server.StartAsync();
         }
     }
 }

@@ -5,35 +5,32 @@ namespace Chat
 {
     public static class RequestParser
     {
-        public static List<object> ParseParams(Stream request)
+        public static List<string> ParseParams(Stream request)
         {
+            List<string> result = null;
             using (var reader = new StreamReader(request))
             {
                 var line = reader.ReadLine();
-                if (line is null)
-                {
-                    return null;
-                }
-                else
+                if (line is not null)
                 {
                     var parameteres = line.Split('&');
-                    var result = new List<object>();
+                    result = new List<string>();
 
                     foreach (var param in parameteres)
                     {
                         result.Add(param.Split('=')[1]);
                     }
-
-                    return result;
                 }
-
             }
+
+            return result;
         }
 
-        public static List<object> ParseParams(string request)
+
+        public static List<string> ParseParams(string request)
         {
+            var result = new List<string>();
             var parameteres = request.Split('&');
-            var result = new List<object>();
 
             foreach (var param in parameteres)
             {
@@ -42,6 +39,5 @@ namespace Chat
 
             return result;
         }
-
     }
 }

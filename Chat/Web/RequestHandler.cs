@@ -14,9 +14,9 @@ namespace Chat.Web
         private const string NumMes = "<!--NumMes-->";
         private const string MessagesIds = "<!--MesIds-->";
 
-        partial void Authorize(HttpListenerRequest request, HttpListenerResponse response)
+        async partial void Authorize(HttpListenerRequest request, HttpListenerResponse response)
         {
-            var userName = request.Cookies.FirstOrDefault(i => i.Name == "userName")?.Value;
+            var userName = request.Cookies.AsParallel().FirstOrDefault(i => i.Name == "userName")?.Value;
             if (userName is null)
             {
                 response.Redirect(_options.Protocol + _options.Host + _options.Port + "signIn");
@@ -26,19 +26,19 @@ namespace Chat.Web
                 response.Redirect(_options.Protocol + _options.Host + _options.Port + "userPage");
             }
 
-            ResponseWriter.WriteResponse("", response.OutputStream);
+           await ResponseWriter.WriteResponseAsync("", response.OutputStream);
         }
 
-        partial void ShowSignInPage(HttpListenerRequest request, HttpListenerResponse response)
+        async partial void ShowSignInPage(HttpListenerRequest request, HttpListenerResponse response)
         {
-            var file = File.ReadAllText(@"Templates\index.html");
-            ResponseWriter.WriteResponse(file, response.OutputStream);
+            var file = await File.ReadAllTextAsync(@"Templates\index.html");
+            await ResponseWriter.WriteResponseAsync(file, response.OutputStream);
         }
 
-        partial void SignIn(HttpListenerRequest request, HttpListenerResponse response)
+        async partial void SignIn(HttpListenerRequest request, HttpListenerResponse response)
         {
             var userName = RequestParser.ParseParams(request.InputStream)[0].ToString();
-            var chats = _messenger.SignIn(userName)?.Select(i => i.Name);
+            var chats = _messenger.SignIn(userName)?.AsParallel().Select(i => i.Name);
             if (chats is not null)
             {
                 var cookie = new Cookie("userName", userName);
@@ -46,18 +46,17 @@ namespace Chat.Web
             }
 
             response.Redirect(_options.Protocol + _options.Host + _options.Port);
-            ResponseWriter.WriteResponse("", response.OutputStream);
+            await ResponseWriter.WriteResponseAsync("", response.OutputStream);
         }
 
-        partial void ShowSignUpPage(HttpListenerRequest request, HttpListenerResponse response)
+        async partial void ShowSignUpPage(HttpListenerRequest request, HttpListenerResponse response)
         {
-            var file = File.ReadAllText(@"Templates\signUp.html");
-            ResponseWriter.WriteResponse(file, response.OutputStream);
+            var file = await File.ReadAllTextAsync(@"Templates\signUp.html");
+            await ResponseWriter.WriteResponseAsync(file, response.OutputStream);
         }
 
-        partial void SignUp(HttpListenerRequest request, HttpListenerResponse response)
+        async partial void SignUp(HttpListenerRequest request, HttpListenerResponse response)
         {
-
             var parameters = RequestParser.ParseParams(request.InputStream);
 
             var user = new User(parameters[0].ToString(), Type.User.ToString());
@@ -71,20 +70,20 @@ namespace Chat.Web
             {
                 response.Redirect(_options.Protocol + _options.Host + _options.Port + "signIn");
             }
-
-            ResponseWriter.WriteResponse("", response.OutputStream);
+            
+            await ResponseWriter.WriteResponseAsync("", response.OutputStream);
         }
 
-        partial void ShowCreateChatPage(HttpListenerRequest request, HttpListenerResponse response)
+        async partial void ShowCreateChatPage(HttpListenerRequest request, HttpListenerResponse response)
         {
-            var file = File.ReadAllText(@"Templates\createChat.html");
-            ResponseWriter.WriteResponse(file, response.OutputStream);
+            var file = await File.ReadAllTextAsync(@"Templates\createChat.html");
+            await ResponseWriter.WriteResponseAsync(file, response.OutputStream);
         }
 
-        partial void CreateChat(HttpListenerRequest request, HttpListenerResponse response)
+        async partial void CreateChat(HttpListenerRequest request, HttpListenerResponse response)
         {
             var parameters = RequestParser.ParseParams(request.InputStream);
-            var userName = request.Cookies.First(i => i.Name == "userName").Value;
+            var userName = request.Cookies.AsParallel().First(i => i.Name == "userName").Value;
             var chatName = parameters[0].ToString();
             var chat = new Chat(chatName);
             var chats = _messenger.CreateChat(userName, chat);
@@ -97,23 +96,23 @@ namespace Chat.Web
                 response.Redirect(_options.Protocol + _options.Host + _options.Port + "createChat");
             }
 
-            ResponseWriter.WriteResponse("", response.OutputStream);
+            await ResponseWriter.WriteResponseAsync("", response.OutputStream);
         }
 
-        partial void OpenChat(HttpListenerRequest request, HttpListenerResponse response)
+        async partial void OpenChat(HttpListenerRequest request, HttpListenerResponse response)
         {
             var responsePage = "Not found";
-            var userName = request.Cookies.First(i => i.Name == "userName").Value;
+            var userName = request.Cookies.AsParallel().First(i => i.Name == "userName").Value;
             var parameters = request.RawUrl.Split('/');
 
             if (parameters.Length == 3)
             {
                 var chatName = parameters[2];
                 var result = _messenger.OpenChat(userName, chatName);
-                responsePage = File.ReadAllText(@"Templates\chatPage.html");
+                responsePage = await File.ReadAllTextAsync(@"Templates\chatPage.html");
                 var messages = string.Empty;
                 responsePage = responsePage.Replace(NumMes, result.messages.Count().ToString());
-
+                
                 foreach (var message in result.messages)
                 {
                     messages += $"{result.users.Find(i => i.Id == message.UserId).Name} - {message.Text}";
@@ -121,24 +120,24 @@ namespace Chat.Web
                 }
 
                 var messagesIds = string.Empty;
-                foreach(var id in result.messages.Select(i => i.Id))
+                foreach (var id in result.messages.AsParallel().Select(i => i.Id))
                 {
                     messagesIds += id;
                     messagesIds += ';';
                 }
 
                 responsePage = responsePage.Replace(MessagesIds, messagesIds);
-                responsePage =  responsePage.Replace(Messages, messages);
+                responsePage = responsePage.Replace(Messages, messages);
                 responsePage = responsePage.Replace(ChatName, chatName);
                 response.Cookies.Add(new Cookie("chatName", chatName));
             }
 
-            ResponseWriter.WriteResponse(responsePage, response.OutputStream);
+            await ResponseWriter.WriteResponseAsync(responsePage, response.OutputStream);
         }
 
-        partial void DeleteChat(HttpListenerRequest request, HttpListenerResponse response)
+        async partial void DeleteChat(HttpListenerRequest request, HttpListenerResponse response)
         {
-            var userName = request.Cookies.First(i => i.Name == "userName").Value;
+            var userName = request.Cookies.AsParallel().First(i => i.Name == "userName").Value;
             var parameters = request.RawUrl.Split('/');
 
             if (parameters.Length == 3)
@@ -148,12 +147,12 @@ namespace Chat.Web
                 response.Redirect(_options.Protocol + _options.Host + _options.Port + "userPage");
             }
 
-            ResponseWriter.WriteResponse("", response.OutputStream);
+            await ResponseWriter.WriteResponseAsync("", response.OutputStream);
         }
 
-        partial void ExitChat(HttpListenerRequest request, HttpListenerResponse response)
+        async partial void ExitChat(HttpListenerRequest request, HttpListenerResponse response)
         {
-            var userName = request.Cookies.First(i => i.Name == "userName").Value;
+            var userName = request.Cookies.AsParallel().First(i => i.Name == "userName").Value;
             var parameters = request.RawUrl.Split('/');
 
             if (parameters.Length == 3)
@@ -163,48 +162,48 @@ namespace Chat.Web
                 response.Redirect(_options.Protocol + _options.Host + _options.Port + $"openChat/{chatName}");
             }
 
-            ResponseWriter.WriteResponse("", response.OutputStream);
+            await ResponseWriter.WriteResponseAsync("", response.OutputStream);
         }
 
-        partial void AddMessage(HttpListenerRequest request, HttpListenerResponse response)
+        async partial void AddMessage(HttpListenerRequest request, HttpListenerResponse response)
         {
-            var userName = request.Cookies.First(i => i.Name == "userName").Value;
-            var chatName = request.Cookies.First(i => i.Name == "chatName").Value;
+            var userName = request.Cookies.AsParallel().First(i => i.Name == "userName").Value;
+            var chatName = request.Cookies.AsParallel().First(i => i.Name == "chatName").Value;
 
             var textOfMessage = RequestParser.ParseParams(request.InputStream)[0].ToString();
             _messenger.AddMessage(userName, chatName, textOfMessage);
             response.Redirect(_options.Protocol + _options.Host + _options.Port + $"openChat/{chatName}");
-            ResponseWriter.WriteResponse("", response.OutputStream);
+            await ResponseWriter.WriteResponseAsync("", response.OutputStream);
         }
 
-        partial void ShowAddUserToChatPage(HttpListenerRequest request, HttpListenerResponse response)
+        async partial void ShowAddUserToChatPage(HttpListenerRequest request, HttpListenerResponse response)
         {
-            var file = File.ReadAllText(@"Templates\addUserToChat.html");
-            ResponseWriter.WriteResponse(file, response.OutputStream);
+            var file = await File.ReadAllTextAsync(@"Templates\addUserToChat.html");
+            await ResponseWriter.WriteResponseAsync(file, response.OutputStream);
         }
 
-        partial void AddUserToChat(HttpListenerRequest request, HttpListenerResponse response)
+        async partial void AddUserToChat(HttpListenerRequest request, HttpListenerResponse response)
         {
             var parameters = RequestParser.ParseParams(request.InputStream);
 
             if (parameters is null)
             {
-                ResponseWriter.WriteResponse("Not found", response.OutputStream);
+                await ResponseWriter.WriteResponseAsync("Not found", response.OutputStream);
             }
             else
             {
                 var userName = parameters[0].ToString();
-                var chatName = request.Cookies.FirstOrDefault(i => i.Name == "chatName").Value;
+                var chatName = request.Cookies.AsParallel().FirstOrDefault(i => i.Name == "chatName").Value;
                 _messenger.AddUserToChat(userName, chatName);
                 response.Redirect(_options.Protocol + _options.Host + _options.Port + $"openChat/{chatName}");
-                ResponseWriter.WriteResponse("", response.OutputStream);
+                await ResponseWriter.WriteResponseAsync("", response.OutputStream);
             }
         }
 
-        partial void DeleteMessage(HttpListenerRequest request, HttpListenerResponse response)
+        async partial void DeleteMessageAsync(HttpListenerRequest request, HttpListenerResponse response)
         {
-            var userName = request.Cookies.First(i => i.Name == "userName").Value;
-            var chatName = request.Cookies.First(i => i.Name == "chatName").Value;
+            var userName = request.Cookies.AsParallel().First(i => i.Name == "userName").Value;
+            var chatName = request.Cookies.AsParallel().First(i => i.Name == "chatName").Value;
 
             var parameters = RequestParser.ParseParams(request.RawUrl);
             if (parameters.Count > 0)
@@ -214,18 +213,18 @@ namespace Chat.Web
             }
 
             response.Redirect(_options.Protocol + _options.Host + _options.Port + $"openChat/{chatName}");
-            ResponseWriter.WriteResponse("", response.OutputStream);
+            await ResponseWriter.WriteResponseAsync("", response.OutputStream);
         }
 
-        partial void ShowUserPage(HttpListenerRequest request, HttpListenerResponse response)
+        async partial void ShowUserPage(HttpListenerRequest request, HttpListenerResponse response)
         {
-            var userName = request.Cookies.FirstOrDefault(i => i.Name == "userName")?.Value;
-            var chatNames = _messenger.SignIn(userName)?.Select(i => i.Name);
-            var responsePage = File.ReadAllText(@"Templates\userPage.html");
+            var userName = request.Cookies.AsParallel().FirstOrDefault(i => i.Name == "userName")?.Value;
+            var chatNames = _messenger.SignIn(userName)?.AsParallel().Select(i => i.Name);
+            var responsePage = await File.ReadAllTextAsync(@"Templates\userPage.html");
             var chats = string.Empty;
             responsePage = responsePage.Replace("'<!--NumChats-->'", chatNames.Count().ToString());
 
-            foreach(var chat in chatNames)
+            foreach (var chat in chatNames)
             {
                 chats += chat;
                 chats += ';';
@@ -233,7 +232,7 @@ namespace Chat.Web
 
             responsePage = responsePage.Replace(Chats, chats);
             responsePage = responsePage.Replace(UserName, userName);
-            ResponseWriter.WriteResponse(responsePage, response.OutputStream);
+            await ResponseWriter.WriteResponseAsync(responsePage, response.OutputStream);
         }
     }
 }

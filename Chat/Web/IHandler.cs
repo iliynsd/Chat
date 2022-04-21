@@ -1,9 +1,10 @@
 ﻿using System.Net;
+using System.Threading.Tasks;
 
 namespace Chat
 {
     public interface IHandler
     {
-        public void Handle(HttpListenerRequest request, HttpListenerResponse response);
+        public Task HandleAsync(HttpListenerRequest request, HttpListenerResponse response);
     }
 }

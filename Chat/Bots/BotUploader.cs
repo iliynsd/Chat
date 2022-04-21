@@ -1,5 +1,5 @@
 ﻿using Chat.BotServices;
-
+using System.Threading.Tasks;
 namespace Chat.Bots
 {
     class BotUploader : IMessageBot
@@ -12,13 +12,16 @@ namespace Chat.Bots
             _goToUrlBotService = goToUrlBotService;
         }
 
-        public void OnMessage(Message message)
+        public async void OnMessage(Message message)
         {
-            var url = message.Text;
-            if (url.Contains("http"))
+            await Task.Factory.StartNew(() =>
             {
-                _goToUrlBotService.GoToUrl(Name, message.ChatId, url);
-            }
+                var url = message.Text;
+                if (url.Contains("http"))
+                {
+                    _goToUrlBotService.GoToUrl(Name, message.ChatId, url);
+                }
+            });
         }
     }
 }

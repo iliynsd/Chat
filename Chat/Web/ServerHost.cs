@@ -1,5 +1,7 @@
 ﻿using Microsoft.Extensions.Options;
+using System;
 using System.Net;
+using System.Threading.Tasks;
 
 namespace Chat
 {
@@ -14,7 +16,7 @@ namespace Chat
             _options = options.Value;
         }
 
-        public void Start()
+        public async Task StartAsync()
         {
             HttpListener listener = new HttpListener();
             listener.Prefixes.Add(_options.Protocol + _options.Host + _options.Port);
@@ -23,9 +25,9 @@ namespace Chat
             while (true)
             {
                 var context = listener.GetContext();
-                var request = context.Request;
+                var request =  context.Request;
                 var response = context.Response;
-                _handler.Handle(request, response);
+                await _handler.HandleAsync(request, response);
             }
         }
     }

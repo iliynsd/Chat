@@ -2,6 +2,7 @@
 using System;
 using System.Net;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace Chat.Web
 {
@@ -35,9 +36,9 @@ namespace Chat.Web
         partial void AddMessage(HttpListenerRequest request, HttpListenerResponse response);
         partial void ShowAddUserToChatPage(HttpListenerRequest request, HttpListenerResponse response);
         partial void AddUserToChat(HttpListenerRequest request, HttpListenerResponse response);
-        partial void DeleteMessage(HttpListenerRequest request, HttpListenerResponse response);
+        partial void DeleteMessageAsync(HttpListenerRequest request, HttpListenerResponse response);
 
-        public void Handle(HttpListenerRequest request, HttpListenerResponse response)
+        public async Task HandleAsync(HttpListenerRequest request, HttpListenerResponse response)
         {
             Console.WriteLine(request.RawUrl);
 
@@ -88,7 +89,7 @@ namespace Chat.Web
             }
             if (Regex.IsMatch(request.RawUrl, ChatPageRequests("deleteMessage")))
             {
-                DeleteMessage(request, response);
+                DeleteMessageAsync(request, response);
             }
             if (Regex.IsMatch(request.RawUrl, RootRequestTemplate("userPage")))
             {

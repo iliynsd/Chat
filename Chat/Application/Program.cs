@@ -12,12 +12,13 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System.Threading.Tasks;
 
 namespace Chat
 {
     class Program
     {
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
             CreateHostBuilder(args).Build().Services.GetRequiredService<IMenu>().Start();
         }
