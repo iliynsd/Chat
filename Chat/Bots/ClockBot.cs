@@ -30,7 +30,7 @@ namespace Chat.Bots
              {
                  if (_botCommands.ContainsKey(message.Text))
                  {
-                     Thread.Sleep(60);
+                     Thread.Sleep(6000);
                      var botAnswer = _botCommands[message.Text]?.Invoke();
                      _messageService.AddMessage(Name, message.ChatId, botAnswer);
                      _chatActionService.AddChatAction(Name, message.ChatId, botAnswer);

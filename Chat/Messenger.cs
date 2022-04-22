@@ -87,7 +87,7 @@ namespace Chat
 
                 foreach (var bot in bots)
                 {
-                     bot.OnMessage(message);
+                    bot.OnMessage(message);
                 }
 
                 return (chat, messages.GetChatMessages(chat), users.GetAll().FindAll(i => chat.Users.Contains(i)));

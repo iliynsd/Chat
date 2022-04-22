@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Options;
-using System;
 using System.Net;
 using System.Threading.Tasks;
 
@@ -25,9 +24,10 @@ namespace Chat
             while (true)
             {
                 var context = listener.GetContext();
-                var request =  context.Request;
+                var request = context.Request;
                 var response = context.Response;
-               await _handler.HandleAsync(request, response);
+
+                var _ = _handler.HandleAsync(request, response);
             }
         }
     }
