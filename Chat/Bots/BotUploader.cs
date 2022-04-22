@@ -12,7 +12,7 @@ namespace Chat.Bots
             _goToUrlBotService = goToUrlBotService;
         }
 
-        public async void OnMessage(Message message)
+        public async Task OnMessage(Message message)
         {
             await Task.Factory.StartNew(() =>
             {
