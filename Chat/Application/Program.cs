@@ -34,7 +34,7 @@ namespace Chat
 
                     serviceCollection.Configure<Options>(hostContext.Configuration.GetSection(Options.ApplicationPath).Bind);
 
-                    serviceCollection.AddSingleton<IMenu, ConsoleMenu>();
+                    serviceCollection.AddSingleton<IMenu, WebMenu>();
                     serviceCollection.AddTransient<IMessageRepository, PostgresMessageRepository>();
                     serviceCollection.AddTransient<IChatRepository, PostgresChatRepository>();
                     serviceCollection.AddTransient<IUserRepository, PostgresUserRepository>();

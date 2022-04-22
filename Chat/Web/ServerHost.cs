@@ -27,7 +27,7 @@ namespace Chat
                 var context = listener.GetContext();
                 var request =  context.Request;
                 var response = context.Response;
-                await _handler.HandleAsync(request, response);
+               await _handler.HandleAsync(request, response);
             }
         }
     }
