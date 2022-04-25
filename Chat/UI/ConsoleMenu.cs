@@ -203,12 +203,12 @@ namespace Chat.Utils
             MainMenu(result);
         }
 
-        private void AddMessage(string input)
+        private async void AddMessage(string input)
         {
             var userName = GetUserName(input);
             var chatName = GetChatName(input);
             var textOfMessage = GetTextOfMessage(input);
-            var result = _messenger.AddMessage(userName, chatName, textOfMessage);
+            var result = await _messenger.AddMessage(userName, chatName, textOfMessage);
             ShowChatMenu(result.chat, result.messages, result.users);
         }
 

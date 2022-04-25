@@ -5,6 +5,8 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Chat
 {
@@ -63,7 +65,7 @@ namespace Chat
             }
         }
 
-        public (Chat chat, List<Message> messages, List<User> users) AddMessage(string userName, string chatName, string textOfMessage)
+        public async Task<(Chat chat, List<Message> messages, List<User> users)> AddMessage(string userName, string chatName, string textOfMessage)
         {
             using (var scope = _serviceProvider.CreateScope())
             {
@@ -85,9 +87,19 @@ namespace Chat
                 messages.Save();
                 var bots = scope.ServiceProvider.GetServices<IMessageBot>();
 
+
+                SemaphoreSlim ss = new SemaphoreSlim(10);
+                List<Task> trackedTasks = new List<Task>();
                 foreach (var bot in bots)
                 {
-                    bot.OnMessage(message);
+                    await ss.WaitAsync();
+                    trackedTasks.Add(Task.Run(() =>
+                    {
+                        bot.OnMessage(message);
+                        ss.Release();
+                    }));
+                    
+                    await Task.WhenAny(trackedTasks);
                 }
 
                 return (chat, messages.GetChatMessages(chat), users.GetAll().FindAll(i => chat.Users.Contains(i)));

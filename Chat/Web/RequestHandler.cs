@@ -42,7 +42,6 @@ namespace Chat.Web
                 response.Redirect(_options.Protocol + _options.Host + _options.Port + "userPage");
             }
 
-            Thread.Sleep(6000);
 
             await ResponseWriter.WriteResponseAsync("", response.OutputStream);
         }
@@ -197,7 +196,7 @@ namespace Chat.Web
             var userName = request.Cookies.AsParallel().First(i => i.Name == "userName").Value;
             var chatName = request.Cookies.AsParallel().First(i => i.Name == "chatName").Value;
             var textOfMessage = RequestParser.ParseParams(request.InputStream)[0].ToString();
-            _messenger.AddMessage(userName, chatName, textOfMessage);
+            await _messenger.AddMessage(userName, chatName, textOfMessage);
             response.Redirect(_options.Protocol + _options.Host + _options.Port + $"openChat/{chatName}");
 
             await ResponseWriter.WriteResponseAsync("", response.OutputStream);
@@ -247,9 +246,9 @@ namespace Chat.Web
         {
             var responsePage = await File.ReadAllTextAsync(@"Templates\userPage.html");
 
-            Thread.Sleep(10000);
             var userName = request.Cookies.AsParallel().FirstOrDefault(i => i.Name == "userName")?.Value;
-            var chatNames = _messenger.SignIn(userName)?.AsParallel().Select(i => i.Name);
+            var chatNames = _messenger.SignIn(userName)?
+                .Select(i => i.Name);
 
             var chats = string.Empty;
             responsePage = responsePage.Replace("'<!--NumChats-->'", chatNames.Count().ToString());
