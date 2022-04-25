@@ -1,3 +1,4 @@
+using Chat.Bots;
 using Chat.Models;
 using Chat.Repositories;
 using Microsoft.AspNetCore.Mvc;
@@ -5,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Chat
@@ -88,13 +90,25 @@ namespace Chat
                 actions.Add(action);
                 actions.Save();
                 messages.Save();
-                var bots = scope.ServiceProvider.GetServices<IMessageBot>();
 
-                Parallel.ForEach(bots, new ParallelOptions { MaxDegreeOfParallelism = 10 },
-                    async (bot) =>
-                    {
-                        await Task.Run(() => bot.OnMessage(message));
-                    });
+             
+                var botIoc = _serviceProvider.GetRequiredService<IBotIoC>();
+                var bots = botIoc.GetServices<IMessageBot>().ToList();
+               
+                
+                  SemaphoreSlim ss = new SemaphoreSlim(2);
+
+                
+                  List<Task> trackedTasks = new List<Task>();
+                  foreach (var bot in bots)
+                  {
+                      await ss.WaitAsync();
+                      trackedTasks.Add(Task.Run(async () =>
+                      {
+                          await bot.OnMessage(message);
+                          ss.Release();
+                      }));
+                  }
 
                 return (chat, messages.GetChatMessages(chat), users.GetAll().FindAll(i => chat.Users.Contains(i)));
             }

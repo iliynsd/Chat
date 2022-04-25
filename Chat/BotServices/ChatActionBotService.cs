@@ -1,31 +1,26 @@
 ﻿using Chat.Bots;
 using Chat.Models;
 using Chat.Repositories;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.DependencyInjection;
-using System;
 
 namespace Chat.BotServices
 {
     public class ChatActionBotService : IChatActionBotService
     {
-        private IServiceProvider _serviceProvider;
+        private IChatRepository _chats;
+        private IChatActionsRepository _chatActions;
 
-        public ChatActionBotService([FromServices] IServiceProvider serviceProvider)
+        public ChatActionBotService(IChatRepository chats, IChatActionsRepository chatActions)
         {
-            _serviceProvider = serviceProvider;
+            _chats = chats;
+            _chatActions = chatActions;
         }
+
         public void AddChatAction(string botName, int chatId, string text)
         {
-            using (var scope = _serviceProvider.CreateScope())
-            {
-                var chats = scope.ServiceProvider.GetRequiredService<IChatRepository>();
-                var actions = scope.ServiceProvider.GetRequiredService<IChatActionsRepository>();
-                var chat = chats.GetChatById(chatId);
-                var action = new ChatAction(ChatActions.BotAddMessage(botName, chat.Name, text));
-                actions.Add(action);
-                actions.Save();
-            }
+            var chat = _chats.GetChatById(chatId);
+            var action = new ChatAction(ChatActions.BotAddMessage(botName, chat.Name, text));
+            _chatActions.Add(action);
+            _chatActions.Save();
         }
     }
 }

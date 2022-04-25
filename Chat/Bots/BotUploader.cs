@@ -1,18 +1,20 @@
 ﻿using Chat.BotServices;
 using System.Threading;
+using System.Threading.Tasks;
+
 namespace Chat.Bots
 {
-    class BotUploader : IMessageBot
+   public class BotUploader : IMessageBot
     {
         public const string Name = "BotUploader";
-        private IGoToUrlBotService _goToUrlBotService;
+        private readonly IGoToUrlBotService _goToUrlBotService;
 
-        public BotUploader(IGoToUrlBotService goToUrlBotService)
+        public BotUploader(IGoToUrlBotService parGoToUrlBotService)
         {
-            _goToUrlBotService = goToUrlBotService;
+            _goToUrlBotService = parGoToUrlBotService;
         }
 
-        public void OnMessage(Message message)
+        public Task OnMessage(Message message)
         {
             Thread.Sleep(10000);
             var url = message.Text;
@@ -20,6 +22,7 @@ namespace Chat.Bots
             {
                 _goToUrlBotService.GoToUrl(Name, message.ChatId, url);
             }
+            return Task.CompletedTask;
         }
     }
 }

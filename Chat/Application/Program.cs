@@ -1,6 +1,5 @@
 ﻿using Chat.AppOptions;
 using Chat.Bots;
-using Chat.BotServices;
 using Chat.Dal;
 using Chat.Repositories;
 using Chat.Repositories.PostgresRepositories;
@@ -44,16 +43,11 @@ namespace Chat
                     serviceCollection.AddScoped<IHandler, RequestHandler>();
                     serviceCollection.AddSingleton<ServerHost>();
 
-                    serviceCollection.AddSingleton<IMessageBot, ClockBot>();
-                    serviceCollection.AddSingleton<IMessageBot, BotUploader>();
-                    serviceCollection.AddSingleton<IMessageBotService, MessageBotService>();
-                    serviceCollection.AddSingleton<IChatActionBotService, ChatActionBotService>();
-                    serviceCollection.AddSingleton<IGoToUrlBotService, GoToUrlBotService>();
 
+                    serviceCollection.AddSingleton<IBotIoC, BotIoC>();
+                     serviceCollection.AddSingleton<Messenger>();
 
-                    serviceCollection.AddSingleton<Messenger>();
                 });
         }
     }
-    //TODO сделать отдельный контейнер для ботов, насытить интерфейс он должен принимать url вызывать соответсвующий метод у интерфейса для разборки урла вынимать все параметры и вызывать методы messenger api типа SignIn(username)
-}//TODO сделать webmenu принимать url, возвращать json, потом вынести логику api в отдельный файл, переделать ботов, сделать userdto; 
+}

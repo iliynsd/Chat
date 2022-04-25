@@ -1,32 +1,26 @@
 ﻿using Chat.Repositories;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.DependencyInjection;
-using System;
 
 namespace Chat.BotServices
 {
     class GoToUrlBotService : IGoToUrlBotService
     {
-        private IServiceProvider _serviceProvider;
+        private IChatRepository _chats;
+        private IUserRepository _users;
 
-        public GoToUrlBotService([FromServices] IServiceProvider serviceProvider)
+        public GoToUrlBotService(IChatRepository chats, IUserRepository users)
         {
-            _serviceProvider = serviceProvider;
+            _chats = chats;
+            _users = users;
         }
 
         public void GoToUrl(string botName, int chatId, string url)
         {
-            using (var scope = _serviceProvider.CreateScope())
-            {
-                var chats = scope.ServiceProvider.GetRequiredService<IChatRepository>();
-                var users = scope.ServiceProvider.GetRequiredService<IUserRepository>();
-                var bot = users.Get(botName);
-                var chat = chats.GetChatById(chatId);
+            var bot = _users.Get(botName);
+            var chat = _chats.GetChatById(chatId);
 
-                if (chat.Users.Contains(bot))
-                {
-                    new OpenQA.Selenium.Chrome.ChromeDriver().Navigate().GoToUrl(url);
-                }
+            if (chat.Users.Contains(bot))
+            {
+                new OpenQA.Selenium.Chrome.ChromeDriver().Navigate().GoToUrl(url);
             }
         }
     }

@@ -1,42 +1,38 @@
 ﻿using Chat.Models;
 using Chat.Repositories;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.DependencyInjection;
-using System;
 
 namespace Chat
 {
     public class MessageBotService : IMessageBotService
     {
-        private IServiceProvider _serviceProvider;
+        private IMessageRepository _messages;
+        private IChatRepository _chats;
+        private IChatActionsRepository _chatActions;
+        private IUserRepository _users;
 
-        public MessageBotService([FromServices] IServiceProvider serviceProvider)
+        public MessageBotService(IMessageRepository messages, IChatRepository chats, IChatActionsRepository chatActions, IUserRepository users)
         {
-            _serviceProvider = serviceProvider;
+            _messages = messages;
+            _chats = chats;
+            _chatActions = chatActions;
+            _users = users;
         }
 
         public void AddMessage(string botName, int chatId, string answer)
         {
-            using (var scope = _serviceProvider.CreateScope())
+            var bot = _users.Get(botName);
+            var chat = _chats.GetChatById(chatId);
+
+            if (chat.Users.Contains(bot))
             {
-                var messages = scope.ServiceProvider.GetRequiredService<IMessageRepository>();
-                var chats = scope.ServiceProvider.GetRequiredService<IChatRepository>();
-                var actions = scope.ServiceProvider.GetRequiredService<IChatActionsRepository>();
-                var users = scope.ServiceProvider.GetRequiredService<IUserRepository>();
-                var bot = users.Get(botName);
-                var chat = chats.GetChatById(chatId);
-
-                if (chat.Users.Contains(bot))
-                {
-                    var message = new Message(bot.Id, chat.Id, answer);
-                    messages.Add(message);
-                    var action = new ChatAction(ChatActions.UserAddMessage(botName, chat.Name, answer));
-                    actions.Add(action);
-                }
-
-                messages.Save();
-                actions.Save();
+                var message = new Message(bot.Id, chat.Id, answer);
+                _messages.Add(message);
+                var action = new ChatAction(ChatActions.UserAddMessage(botName, chat.Name, answer));
+                _chatActions.Add(action);
             }
+
+            _messages.Save();
+            _chatActions.Save();
         }
     }
 }
