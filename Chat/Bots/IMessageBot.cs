@@ -1,9 +1,7 @@
-﻿using System.Threading.Tasks;
-
-namespace Chat
+﻿namespace Chat
 {
     internal interface IMessageBot
     {
-        public Task OnMessage(Message message);
+        public void OnMessage(Message message);
     }
 }

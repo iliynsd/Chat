@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace Chat.Bots
 {
@@ -24,18 +23,17 @@ namespace Chat.Bots
              };
         }
 
-        public async Task OnMessage(Message message)
+        public void OnMessage(Message message)
         {
-            await Task.Factory.StartNew(() =>
-             {
-                 if (_botCommands.ContainsKey(message.Text))
-                 {
-                     Thread.Sleep(6000);
-                     var botAnswer = _botCommands[message.Text]?.Invoke();
-                     _messageService.AddMessage(Name, message.ChatId, botAnswer);
-                     _chatActionService.AddChatAction(Name, message.ChatId, botAnswer);
-                 }
-             });
+
+            if (_botCommands.ContainsKey(message.Text))
+            {
+                Thread.Sleep(10000);
+                var botAnswer = _botCommands[message.Text]?.Invoke();
+                _messageService.AddMessage(Name, message.ChatId, botAnswer);
+                _chatActionService.AddChatAction(Name, message.ChatId, botAnswer);
+            }
+
         }
     }
 }

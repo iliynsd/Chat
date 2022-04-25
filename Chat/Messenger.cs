@@ -5,7 +5,6 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Chat
@@ -77,6 +76,10 @@ namespace Chat
 
                 var user = users.Get(userName);
                 var chat = chats.GetChat(chatName);
+
+                textOfMessage = TryConvertUrl(textOfMessage);
+
+
                 var message = new Message(user.Id, chat.Id, textOfMessage);
 
                 messages.Add(message);
@@ -87,20 +90,11 @@ namespace Chat
                 messages.Save();
                 var bots = scope.ServiceProvider.GetServices<IMessageBot>();
 
-
-                SemaphoreSlim ss = new SemaphoreSlim(10);
-                List<Task> trackedTasks = new List<Task>();
-                foreach (var bot in bots)
-                {
-                    await ss.WaitAsync();
-                    trackedTasks.Add(Task.Run(() =>
+                Parallel.ForEach(bots, new ParallelOptions { MaxDegreeOfParallelism = 10 },
+                    async (bot) =>
                     {
-                        bot.OnMessage(message);
-                        ss.Release();
-                    }));
-                    
-                    await Task.WhenAny(trackedTasks);
-                }
+                        await Task.Run(() => bot.OnMessage(message));
+                    });
 
                 return (chat, messages.GetChatMessages(chat), users.GetAll().FindAll(i => chat.Users.Contains(i)));
             }
@@ -250,6 +244,15 @@ namespace Chat
                 chats.Save();
                 return (chat, messages.GetChatMessages(chat), users.GetAll().FindAll(i => chat.Users.Contains(i)));
             }
+        }
+
+        private string TryConvertUrl(string url)
+        {
+            if (url.Contains("%3A%2F%2F"))
+            {
+                url = url.Replace("%3A%2F%2F", "://");
+            }
+            return url;
         }
     }
 }

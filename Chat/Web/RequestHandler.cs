@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Chat.Web
@@ -175,7 +174,7 @@ namespace Chat.Web
             await ResponseWriter.WriteResponseAsync("", response.OutputStream);
         }
 
-       private async Task ExitChat(HttpListenerRequest request, HttpListenerResponse response)
+        private async Task ExitChat(HttpListenerRequest request, HttpListenerResponse response)
         {
 
             var userName = request.Cookies.AsParallel().First(i => i.Name == "userName").Value;
