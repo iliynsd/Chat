@@ -75,12 +75,10 @@ namespace Chat
                 var chats = scope.ServiceProvider.GetRequiredService<IChatRepository>();
                 var actions = scope.ServiceProvider.GetRequiredService<IChatActionsRepository>();
 
-
                 var user = users.Get(userName);
                 var chat = chats.GetChat(chatName);
 
                 textOfMessage = TryConvertUrl(textOfMessage);
-
 
                 var message = new Message(user.Id, chat.Id, textOfMessage);
 
@@ -94,21 +92,32 @@ namespace Chat
              
                 var botIoc = _serviceProvider.GetRequiredService<IBotIoC>();
                 var bots = botIoc.GetServices<IMessageBot>().ToList();
-               
-                
-                  SemaphoreSlim ss = new SemaphoreSlim(2);
+
 
                 
-                  List<Task> trackedTasks = new List<Task>();
-                  foreach (var bot in bots)
-                  {
-                      await ss.WaitAsync();
-                      trackedTasks.Add(Task.Run(async () =>
-                      {
-                          await bot.OnMessage(message);
-                          ss.Release();
-                      }));
-                  }
+                    Semaphore semaphore = new Semaphore(1, 1);
+                    var threads = new List<Thread>();
+                    foreach (var entity in bots)
+                    {
+                        var thread = new Thread(() =>
+                        {
+                            semaphore.WaitOne();
+                            try
+                            {
+                                entity.OnMessage(message);
+                            }
+                            finally
+                            {
+                                semaphore.Release();
+                            }
+                        });
+
+                        
+                        threads.Add(thread);
+                        thread.Start();
+                    }
+
+                
 
                 return (chat, messages.GetChatMessages(chat), users.GetAll().FindAll(i => chat.Users.Contains(i)));
             }

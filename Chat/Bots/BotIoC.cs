@@ -22,7 +22,8 @@ namespace Chat
             services.AddSingleton<IGoToUrlBotService, GoToUrlBotService>((_) => new GoToUrlBotService(serviceProvider.GetRequiredService<IChatRepository>(), serviceProvider.GetRequiredService<IUserRepository>()));
             services.AddSingleton<IMessageBot, ClockBot>();
             services.AddSingleton<IMessageBot, BotUploader>();
-
+            
+            
             provider = services.BuildServiceProvider();
         }
 

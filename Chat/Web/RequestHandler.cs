@@ -197,7 +197,6 @@ namespace Chat.Web
             var textOfMessage = RequestParser.ParseParams(request.InputStream)[0].ToString();
             await _messenger.AddMessage(userName, chatName, textOfMessage);
             response.Redirect(_options.Protocol + _options.Host + _options.Port + $"openChat/{chatName}");
-
             await ResponseWriter.WriteResponseAsync("", response.OutputStream);
         }
 

@@ -26,9 +26,9 @@ namespace Chat.Bots
 
         public Task OnMessage(Message message)
         {
+            
             if (_botCommands.ContainsKey(message.Text))
-            {
-                Thread.Sleep(10000);
+            {Thread.Sleep(12000);
                 var botAnswer = _botCommands[message.Text]?.Invoke();
                 _messageService.AddMessage(Name, message.ChatId, botAnswer);
                 _chatActionService.AddChatAction(Name, message.ChatId, botAnswer);

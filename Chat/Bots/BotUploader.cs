@@ -16,10 +16,10 @@ namespace Chat.Bots
 
         public Task OnMessage(Message message)
         {
-            Thread.Sleep(10000);
+            
             var url = message.Text;
             if (url.Contains("http"))
-            {
+            {Thread.Sleep(6000);
                 _goToUrlBotService.GoToUrl(Name, message.ChatId, url);
             }
             return Task.CompletedTask;
