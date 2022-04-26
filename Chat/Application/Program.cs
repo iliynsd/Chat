@@ -45,7 +45,7 @@ namespace Chat
 
 
                     serviceCollection.AddSingleton<IBotIoC, BotIoC>();
-                     serviceCollection.AddSingleton<Messenger>();
+                    serviceCollection.AddSingleton<Messenger>();
 
                 });
         }

@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Chat.Bots
 {
-   public class BotUploader : IMessageBot
+    public class BotUploader : IMessageBot
     {
         public const string Name = "BotUploader";
         private readonly IGoToUrlBotService _goToUrlBotService;
@@ -16,10 +16,11 @@ namespace Chat.Bots
 
         public Task OnMessage(Message message)
         {
-            
+
             var url = message.Text;
             if (url.Contains("http"))
-            {Thread.Sleep(6000);
+            {
+                Thread.Sleep(6000);
                 _goToUrlBotService.GoToUrl(Name, message.ChatId, url);
             }
             return Task.CompletedTask;

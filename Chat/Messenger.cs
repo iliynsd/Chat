@@ -3,6 +3,7 @@ using Chat.Models;
 using Chat.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,10 +15,14 @@ namespace Chat
     public class Messenger
     {
         private IServiceProvider _serviceProvider;
+        private static SemaphoreSlim _semaphoreBots;
+        private AppOptions.Options _options;
 
-        public Messenger([FromServices] IServiceProvider serviceProvider)
+        public Messenger(IServiceProvider serviceProvider, IOptions<AppOptions.Options> options)
         {
             _serviceProvider = serviceProvider;
+            _options = options.Value;
+            _semaphoreBots = new SemaphoreSlim(2);
         }
 
 
@@ -89,36 +94,14 @@ namespace Chat
                 actions.Save();
                 messages.Save();
 
-             
+
                 var botIoc = _serviceProvider.GetRequiredService<IBotIoC>();
                 var bots = botIoc.GetServices<IMessageBot>().ToList();
 
 
-                
-                    Semaphore semaphore = new Semaphore(1, 1);
-                    var threads = new List<Thread>();
-                    foreach (var entity in bots)
-                    {
-                        var thread = new Thread(() =>
-                        {
-                            semaphore.WaitOne();
-                            try
-                            {
-                                entity.OnMessage(message);
-                            }
-                            finally
-                            {
-                                semaphore.Release();
-                            }
-                        });
-
-                        
-                        threads.Add(thread);
-                        thread.Start();
-                    }
-
-                
-
+                var botInvoker = botIoc.Get<IBotsInvoker<IMessageBot, Message>>();
+                await botInvoker.Invoke(bots, message);
+               
                 return (chat, messages.GetChatMessages(chat), users.GetAll().FindAll(i => chat.Users.Contains(i)));
             }
         }
