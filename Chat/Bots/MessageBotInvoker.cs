@@ -23,8 +23,14 @@ namespace Chat.Bots
                 var task = new Task(async () =>
                 {
                     await semaphore.WaitAsync();
-                    await bot.OnMessage(message);
-                    semaphore.Release();
+                    try
+                    {
+                       await bot.OnMessage(message);
+                    }
+                    finally
+                    {
+                       semaphore.Release();
+                    }                    
                 });
 
                 task.Start();
