@@ -37,7 +37,7 @@ namespace Chat.Web
 
         private async Task SignUpAsync(HttpListenerRequest request, HttpListenerResponse response)
         {
-            var userName = RequestParser.ParseParams(request.RawUrl)[0];
+            var userName = RequestParser.ParseParams(request.InputStream)[0];
             var user = new User(userName, Type.User.ToString());
             var signUp = _messenger.SignUp(user);
             var answer = JsonConvert.SerializeObject(signUp, Formatting.Indented, new JsonSerializerSettings() { ReferenceLoopHandling = ReferenceLoopHandling.Ignore });
@@ -66,7 +66,7 @@ namespace Chat.Web
         private async Task DeleteChatAsync(HttpListenerRequest request, HttpListenerResponse response)
         {
             var userName = request.Cookies.AsParallel().First(i => i.Name == "userName").Value;
-            var chatName = RequestParser.ParseParams(request.RawUrl)[0];
+            var chatName = RequestParser.ParseParams(request.InputStream)[0];
             var userChats = _messenger.DeleteChat(userName, chatName);
             var answer = JsonConvert.SerializeObject(userChats, Formatting.Indented, new JsonSerializerSettings() { ReferenceLoopHandling = ReferenceLoopHandling.Ignore });
             await ResponseWriter.WriteResponseAsync(answer, response.OutputStream);
@@ -94,7 +94,7 @@ namespace Chat.Web
 
         private async Task AddUserToChatAsync(HttpListenerRequest request, HttpListenerResponse response)
         {
-            var parameters = RequestParser.ParseParams(request.RawUrl);
+            var parameters = RequestParser.ParseParams(request.InputStream);
             var userName = parameters[0];
             var chatName = parameters[1];
             var chatWithMesAndUsers = _messenger.AddUserToChat(userName, chatName);
@@ -124,7 +124,7 @@ namespace Chat.Web
             {
                 await OpenChatAsync(request, response);
             }
-            if (Regex.IsMatch(request.RawUrl, RootRequestWithParamsTemplate("deleteChat")))
+            if (Regex.IsMatch(request.RawUrl, RootRequestTemplate("deleteChat")))
             {
                 await DeleteChatAsync(request, response);
             }
@@ -136,7 +136,7 @@ namespace Chat.Web
             {
                 await AddMessageAsync(request, response);
             }
-            if (Regex.IsMatch(request.RawUrl, RootRequestWithParamsTemplate("addUserToChat")))
+            if (Regex.IsMatch(request.RawUrl, RootRequestTemplate("addUserToChat")))
             {
                 await AddUserToChatAsync(request, response);
             }
@@ -148,7 +148,7 @@ namespace Chat.Web
             {
                 await SignInAsync(request, response);
             }
-            if (Regex.IsMatch(request.RawUrl, RootRequestWithParamsTemplate("signUp")))
+            if (Regex.IsMatch(request.RawUrl, RootRequestTemplate("signUp")))
             {
                 await SignUpAsync(request, response);
             }
