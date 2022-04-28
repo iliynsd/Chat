@@ -16,7 +16,16 @@ namespace Chat.Repositories.PostgresRepositories
 
         public void Add(Message message) => _dataContext.Messages.Add(message);
 
-        public void Delete(Message message) => _dataContext.Messages.First(i => i.Id == message.Id).IsActive = false;
+        public bool Delete(Message message)
+        {
+            var mes = _dataContext.Messages.FirstOrDefault(i => i.Id == message.Id);
+            if (mes != null)
+            {
+                mes.IsActive = false;
+                return true;
+            }
+            return false;
+        } 
 
         public List<Message> GetAll() => _dataContext.Messages.Where(i => i.IsActive).ToList();
 

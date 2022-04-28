@@ -179,7 +179,7 @@ namespace Chat
             }
         }
 
-        public void DeleteMessage(string userName, string chatName, int messageId)
+        public bool DeleteMessage(string userName, string chatName, int messageId)
         {
             using (var scope = _serviceProvider.CreateScope())
             {
@@ -188,10 +188,10 @@ namespace Chat
                 var actions = scope.ServiceProvider.GetRequiredService<IChatActionsRepository>();
                 var chat = chats.GetChat(chatName);
                 var message = messages.GetChatMessages(chat).Find(i => i.Id == messageId);
-
+                var result = false;
                 if (message != null && message.Time.AddDays(1) >= DateTime.Now)
                 {
-                    messages.Delete(message);
+                    result = messages.Delete(message);
                     var action = new ChatAction(ChatActions.UserDeleteMessage(userName, chatName));
                     actions.Add(action);
                 }
@@ -199,6 +199,7 @@ namespace Chat
                 actions.Save();
                 chats.Save();
                 messages.Save();
+                return result;
             }
         }
 

@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using System;
 using System.IO;
 using System.Linq;
@@ -10,323 +11,146 @@ namespace Chat.Web
 {
     public class RequestHandler : IHandler
     {
-        private const string Messages = "<!--Messages-->";
-        private const string ChatName = "<!--ChatName-->";
-        private const string UserName = "<!--UserName-->";
-        private const string Chats = "<!--Chats-->";
-        private const string NumMes = "<!--NumMes-->";
-        private const string MessagesIds = "<!--MesIds-->";
         private Messenger _messenger;
         private AppOptions.Options _options;
-        private string Root = "/";
-        private string RootRequestWithParamsTemplate(string method) => @$"/{method}\w*";
-        private string RootRequestTemplate(string method) => @$"^/{method}$";
-        private string OpenChatPageRequest => @"/openChat/\w*$";
-        private string ChatPageRequests(string method) => @$"/openChat/\w*/{method}\w*";
-
+        
+        private string RootRequestWithParamsTemplate(string method) => @$"/{method}?\w*";
+        private string RootRequestTemplate(string method) => @$"/{method}";
         public RequestHandler(Messenger messenger, IOptions<AppOptions.Options> options)
         {
             _messenger = messenger;
             _options = options.Value;
         }
-        private async Task Authorize(HttpListenerRequest request, HttpListenerResponse response)
+
+        private async Task SignInAsync(HttpListenerRequest request, HttpListenerResponse response)
         {
-            var userName = request.Cookies.AsParallel().FirstOrDefault(i => i.Name == "userName")?.Value;
-            if (userName is null)
-            {
-                response.Redirect(_options.Protocol + _options.Host + _options.Port + "signIn");
-            }
-            else
-            {
-                response.Redirect(_options.Protocol + _options.Host + _options.Port + "userPage");
-            }
-
-
-            await ResponseWriter.WriteResponseAsync("", response.OutputStream);
-        }
-        private async Task ShowSignInPage(HttpListenerRequest request, HttpListenerResponse response)
-        {
-            var file = await File.ReadAllTextAsync(@"Templates\index.html");
-            await ResponseWriter.WriteResponseAsync(file, response.OutputStream);
-        }
-
-        private async Task SignIn(HttpListenerRequest request, HttpListenerResponse response)
-        {
-
-            var userName = RequestParser.ParseParams(request.InputStream)[0].ToString();
+            var userName = RequestParser.ParseParams(request.RawUrl)[0];
             var chats = _messenger.SignIn(userName)?.AsParallel().Select(i => i.Name);
             if (chats is not null)
             {
                 var cookie = new Cookie("userName", userName);
                 response.AppendCookie(cookie);
             }
-
-            response.Redirect(_options.Protocol + _options.Host + _options.Port);
-
-            await ResponseWriter.WriteResponseAsync("", response.OutputStream);
+            var answer = JsonConvert.SerializeObject(chats, Formatting.Indented, new JsonSerializerSettings() { ReferenceLoopHandling = ReferenceLoopHandling.Ignore });
+            await ResponseWriter.WriteResponseAsync(answer, response.OutputStream);
         }
 
-        private async Task ShowSignUpPage(HttpListenerRequest request, HttpListenerResponse response)
+        private async Task SignUpAsync(HttpListenerRequest request, HttpListenerResponse response)
         {
-            var file = await File.ReadAllTextAsync(@"Templates\signUp.html");
-            await ResponseWriter.WriteResponseAsync(file, response.OutputStream);
-        }
-
-        private async Task SignUp(HttpListenerRequest request, HttpListenerResponse response)
-        {
-
-            var parameters = RequestParser.ParseParams(request.InputStream);
-
-            var user = new User(parameters[0].ToString(), Type.User.ToString());
+            var userName = RequestParser.ParseParams(request.RawUrl)[0];
+            var user = new User(userName, Type.User.ToString());
             var signUp = _messenger.SignUp(user);
-
-            if (!signUp)
-            {
-                response.Redirect(_options.Protocol + _options.Host + _options.Port + "signUp");
-            }
-            else
-            {
-                response.Redirect(_options.Protocol + _options.Host + _options.Port + "signIn");
-            }
-
-
-            await ResponseWriter.WriteResponseAsync("", response.OutputStream);
+            var answer = JsonConvert.SerializeObject(signUp, Formatting.Indented, new JsonSerializerSettings() { ReferenceLoopHandling = ReferenceLoopHandling.Ignore });
+            await ResponseWriter.WriteResponseAsync(answer, response.OutputStream);
         }
 
-        private async Task ShowCreateChatPage(HttpListenerRequest request, HttpListenerResponse response)
+        private async Task CreateChatAsync(HttpListenerRequest request, HttpListenerResponse response)
         {
-            var file = await File.ReadAllTextAsync(@"Templates\createChat.html");
-            await ResponseWriter.WriteResponseAsync(file, response.OutputStream);
-        }
-
-        private async Task CreateChat(HttpListenerRequest request, HttpListenerResponse response)
-        {
-
-            var parameters = RequestParser.ParseParams(request.InputStream);
             var userName = request.Cookies.AsParallel().First(i => i.Name == "userName").Value;
-            var chatName = parameters[0].ToString();
+            var chatName = RequestParser.ParseParams(request.RawUrl)[0];
             var chat = new Chat(chatName);
             var chats = _messenger.CreateChat(userName, chat);
-            if (chats is not null)
-            {
-                response.Redirect(_options.Protocol + _options.Host + _options.Port + "userPage");
-            }
-            else
-            {
-                response.Redirect(_options.Protocol + _options.Host + _options.Port + "createChat");
-            }
-
-
-            await ResponseWriter.WriteResponseAsync("", response.OutputStream);
+            var answer = JsonConvert.SerializeObject(chats, Formatting.Indented, new JsonSerializerSettings() { ReferenceLoopHandling = ReferenceLoopHandling.Ignore });
+            await ResponseWriter.WriteResponseAsync(answer, response.OutputStream);
         }
 
-        private async Task OpenChat(HttpListenerRequest request, HttpListenerResponse response)
-        {
-            var responsePage = "Not found";
-
-            var userName = request.Cookies.AsParallel().First(i => i.Name == "userName").Value;
-            var parameters = request.RawUrl.Split('/');
-
-            if (parameters.Length == 3)
-            {
-                var chatName = parameters[2];
-                var result = _messenger.OpenChat(userName, chatName);
-                responsePage = File.ReadAllText(@"Templates\chatPage.html");
-                var messages = string.Empty;
-                responsePage = responsePage.Replace(NumMes, result.messages.Count().ToString());
-
-                foreach (var message in result.messages)
-                {
-                    messages += $"{result.users.Find(i => i.Id == message.UserId).Name} - {message.Text}";
-                    messages += ';';
-                }
-
-                var messagesIds = string.Empty;
-                foreach (var id in result.messages.Select(i => i.Id))
-                {
-                    messagesIds += id;
-                    messagesIds += ';';
-                }
-
-                responsePage = responsePage.Replace(MessagesIds, messagesIds);
-                responsePage = responsePage.Replace(Messages, messages);
-                responsePage = responsePage.Replace(ChatName, chatName);
-                response.Cookies.Add(new Cookie("chatName", chatName));
-            }
-
-
-            await ResponseWriter.WriteResponseAsync(responsePage, response.OutputStream);
-        }
-
-        private async Task DeleteChat(HttpListenerRequest request, HttpListenerResponse response)
+        private async Task OpenChatAsync(HttpListenerRequest request, HttpListenerResponse response)
         {
             var userName = request.Cookies.AsParallel().First(i => i.Name == "userName").Value;
-            var parameters = request.RawUrl.Split('/');
-
-            if (parameters.Length == 3)
-            {
-                var chatName = parameters[2];
-                _messenger.DeleteChat(userName, chatName);
-                response.Redirect(_options.Protocol + _options.Host + _options.Port + "userPage");
-            }
-
-
-            await ResponseWriter.WriteResponseAsync("", response.OutputStream);
+            var chatName = RequestParser.ParseParams(request.RawUrl)[0];
+            var result = _messenger.OpenChat(userName, chatName);
+            var answer = JsonConvert.SerializeObject(result, Formatting.Indented, new JsonSerializerSettings() { ReferenceLoopHandling = ReferenceLoopHandling.Ignore });
+            await ResponseWriter.WriteResponseAsync(answer, response.OutputStream);
         }
 
-        private async Task ExitChat(HttpListenerRequest request, HttpListenerResponse response)
-        {
-
-            var userName = request.Cookies.AsParallel().First(i => i.Name == "userName").Value;
-            var parameters = request.RawUrl.Split('/');
-
-            if (parameters.Length == 3)
-            {
-                var chatName = parameters[2];
-                _messenger.ExitChat(userName, chatName);
-                response.Redirect(_options.Protocol + _options.Host + _options.Port + $"openChat/{chatName}");
-            }
-
-            await ResponseWriter.WriteResponseAsync("", response.OutputStream);
-        }
-
-        private async Task AddMessage(HttpListenerRequest request, HttpListenerResponse response)
+        private async Task DeleteChatAsync(HttpListenerRequest request, HttpListenerResponse response)
         {
             var userName = request.Cookies.AsParallel().First(i => i.Name == "userName").Value;
-            var chatName = request.Cookies.AsParallel().First(i => i.Name == "chatName").Value;
-            var textOfMessage = RequestParser.ParseParams(request.InputStream)[0].ToString();
-            await _messenger.AddMessage(userName, chatName, textOfMessage);
-            response.Redirect(_options.Protocol + _options.Host + _options.Port + $"openChat/{chatName}");
-            await ResponseWriter.WriteResponseAsync("", response.OutputStream);
+            var chatName = RequestParser.ParseParams(request.RawUrl)[0];
+            var userChats = _messenger.DeleteChat(userName, chatName);
+            var answer = JsonConvert.SerializeObject(userChats, Formatting.Indented, new JsonSerializerSettings() { ReferenceLoopHandling = ReferenceLoopHandling.Ignore });
+            await ResponseWriter.WriteResponseAsync(answer, response.OutputStream);
         }
 
-        private async Task ShowAddUserToChatPage(HttpListenerRequest request, HttpListenerResponse response)
+        private async Task ExitChatAsync(HttpListenerRequest request, HttpListenerResponse response)
         {
-            var file = await File.ReadAllTextAsync(@"Templates\addUserToChat.html");
-            await ResponseWriter.WriteResponseAsync(file, response.OutputStream);
+            var userName = request.Cookies.AsParallel().First(i => i.Name == "userName").Value;
+            var chatName = RequestParser.ParseParams(request.RawUrl)[0];
+            var userChats = _messenger.ExitChat(userName, chatName);
+            var answer = JsonConvert.SerializeObject(userChats, Formatting.Indented, new JsonSerializerSettings() { ReferenceLoopHandling = ReferenceLoopHandling.Ignore });
+            await ResponseWriter.WriteResponseAsync(answer, response.OutputStream);
         }
 
-        private async Task AddUserToChat(HttpListenerRequest request, HttpListenerResponse response)
+        private async Task AddMessageAsync(HttpListenerRequest request, HttpListenerResponse response)
         {
-            var resp = "Not found";
+            var userName = request.Cookies.AsParallel().First(i => i.Name == "userName").Value;
             var parameters = RequestParser.ParseParams(request.InputStream);
+            var chatName = parameters[0];
+            var textOfMessage = parameters[1];
+            var chatWithMessages = await _messenger.AddMessage(userName, chatName, textOfMessage);
+            var answer = JsonConvert.SerializeObject(chatWithMessages, Formatting.Indented, new JsonSerializerSettings() { ReferenceLoopHandling = ReferenceLoopHandling.Ignore });
+            await ResponseWriter.WriteResponseAsync(answer, response.OutputStream);
+        }
 
-            if (parameters is not null)
-            {
-                var userName = parameters[0].ToString();
-                var chatName = request.Cookies.AsParallel().FirstOrDefault(i => i.Name == "chatName").Value;
-                _messenger.AddUserToChat(userName, chatName);
-                response.Redirect(_options.Protocol + _options.Host + _options.Port + $"openChat/{chatName}");
-                resp = "";
-            }
-
-            await ResponseWriter.WriteResponseAsync(resp, response.OutputStream);
+        private async Task AddUserToChatAsync(HttpListenerRequest request, HttpListenerResponse response)
+        {
+            var parameters = RequestParser.ParseParams(request.RawUrl);
+            var userName = parameters[0];
+            var chatName = parameters[1];
+            var chatWithMesAndUsers = _messenger.AddUserToChat(userName, chatName);
+            var answer = JsonConvert.SerializeObject(chatWithMesAndUsers, Formatting.Indented, new JsonSerializerSettings() { ReferenceLoopHandling = ReferenceLoopHandling.Ignore });
+            await ResponseWriter.WriteResponseAsync(answer, response.OutputStream);
         }
 
         private async Task DeleteMessageAsync(HttpListenerRequest request, HttpListenerResponse response)
         {
             var userName = request.Cookies.AsParallel().First(i => i.Name == "userName").Value;
-            var chatName = request.Cookies.AsParallel().First(i => i.Name == "chatName").Value;
-
             var parameters = RequestParser.ParseParams(request.RawUrl);
-            if (parameters.Count > 0)
-            {
-                var messageId = Convert.ToInt32(parameters[0]);
-                _messenger.DeleteMessage(userName, chatName, messageId);
-            }
-
-            response.Redirect(_options.Protocol + _options.Host + _options.Port + $"openChat/{chatName}");
-
-            await ResponseWriter.WriteResponseAsync("", response.OutputStream);
-        }
-
-        private async Task ShowUserPage(HttpListenerRequest request, HttpListenerResponse response)
-        {
-            var responsePage = await File.ReadAllTextAsync(@"Templates\userPage.html");
-
-            var userName = request.Cookies.AsParallel().FirstOrDefault(i => i.Name == "userName")?.Value;
-            var chatNames = _messenger.SignIn(userName)?
-                .Select(i => i.Name);
-
-            var chats = string.Empty;
-            responsePage = responsePage.Replace("'<!--NumChats-->'", chatNames.Count().ToString());
-
-            foreach (var chat in chatNames)
-            {
-                chats += chat;
-                chats += ';';
-            }
-
-            responsePage = responsePage.Replace(Chats, chats);
-            responsePage = responsePage.Replace(UserName, userName);
-
-            await ResponseWriter.WriteResponseAsync(responsePage, response.OutputStream);
+            var chatName = parameters[0];
+            var messageId = Convert.ToInt32(parameters[1]);
+            var messageDeleted = _messenger.DeleteMessage(userName, chatName, messageId);
+            var answer = JsonConvert.SerializeObject(messageDeleted, Formatting.Indented, new JsonSerializerSettings() { ReferenceLoopHandling = ReferenceLoopHandling.Ignore });
+            await ResponseWriter.WriteResponseAsync(answer, response.OutputStream);
         }
 
         public async Task HandleAsync(HttpListenerRequest request, HttpListenerResponse response)
         {
-            Console.WriteLine(request.RawUrl);
 
-            if (request.RawUrl == Root)
+            if (Regex.IsMatch(request.RawUrl, RootRequestWithParamsTemplate("createChat")))
             {
-                await Authorize(request, response);
+                await CreateChatAsync(request, response);
             }
-            if (Regex.IsMatch(request.RawUrl, RootRequestTemplate("signIn")))
+            if (Regex.IsMatch(request.RawUrl, RootRequestWithParamsTemplate("openChat")))
             {
-                await ShowSignInPage(request, response);
-            }
-            if (Regex.IsMatch(request.RawUrl, RootRequestTemplate("signUp")))
-            {
-                await ShowSignUpPage(request, response);
-            }
-            if (Regex.IsMatch(request.RawUrl, RootRequestTemplate("createChat")))
-            {
-                await ShowCreateChatPage(request, response);
-            }
-            if (Regex.IsMatch(request.RawUrl, RootRequestTemplate("makeChat")))
-            {
-                await CreateChat(request, response);
-            }
-            if (Regex.IsMatch(request.RawUrl, OpenChatPageRequest))
-            {
-                await OpenChat(request, response);
+                await OpenChatAsync(request, response);
             }
             if (Regex.IsMatch(request.RawUrl, RootRequestWithParamsTemplate("deleteChat")))
             {
-                await DeleteChat(request, response);
+                await DeleteChatAsync(request, response);
             }
             if (Regex.IsMatch(request.RawUrl, RootRequestWithParamsTemplate("exitChat")))
             {
-                await ExitChat(request, response);
+                await ExitChatAsync(request, response);
             }
-            if (Regex.IsMatch(request.RawUrl, ChatPageRequests("addMessage")))
+            if (Regex.IsMatch(request.RawUrl, RootRequestTemplate("addMessage")))
             {
-                await AddMessage(request, response);
+                await AddMessageAsync(request, response);
             }
-            if (Regex.IsMatch(request.RawUrl, ChatPageRequests("addUserToChat.html")))
+            if (Regex.IsMatch(request.RawUrl, RootRequestWithParamsTemplate("addUserToChat")))
             {
-                await ShowAddUserToChatPage(request, response);
+                await AddUserToChatAsync(request, response);
             }
-
-            if (Regex.IsMatch(request.RawUrl, ChatPageRequests("addUserToChat")))
-            {
-                await AddUserToChat(request, response);
-            }
-            if (Regex.IsMatch(request.RawUrl, ChatPageRequests("deleteMessage")))
+            if (Regex.IsMatch(request.RawUrl, RootRequestWithParamsTemplate("deleteMessage")))
             {
                 await DeleteMessageAsync(request, response);
             }
-            if (Regex.IsMatch(request.RawUrl, RootRequestTemplate("userPage")))
+            if (Regex.IsMatch(request.RawUrl, RootRequestWithParamsTemplate("signIn")))
             {
-                await ShowUserPage(request, response);
+                await SignInAsync(request, response);
             }
-            if (Regex.IsMatch(request.RawUrl, RootRequestTemplate("createSession")))
+            if (Regex.IsMatch(request.RawUrl, RootRequestWithParamsTemplate("signUp")))
             {
-                await SignIn(request, response);
-            }
-            if (Regex.IsMatch(request.RawUrl, RootRequestTemplate("createAccount")))
-            {
-                await SignUp(request, response);
+                await SignUpAsync(request, response);
             }
         }
     }
