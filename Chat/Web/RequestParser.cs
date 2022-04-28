@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System.Collections.Generic;
 using System.IO;
 
 namespace Chat
@@ -37,6 +39,30 @@ namespace Chat
                 result.Add(param.Split('=')[1]);
             }
 
+            return result;
+        }
+
+        public static List<string> ParseJson(Stream request)
+        {
+            List<string> result = new List<string>();
+            using (var reader = new StreamReader(request))
+            {
+                var json = reader.ReadToEnd();
+                var data = JObject.Parse(json);
+                
+                if(data.ContainsKey("userName"))
+                {
+                    result.Add(data.Property("userName").Name);
+                }
+                if(data.ContainsKey("chatName"))
+                {
+                    result.Add(data.Property("chatName").Name);
+                }
+                if(data.ContainsKey("textofMessage"))
+                {
+                    result.Add(data.Property("textOfMessage").Name);
+                }
+            }
             return result;
         }
     }
