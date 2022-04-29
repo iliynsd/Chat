@@ -1,5 +1,4 @@
-﻿
-using Chat.AppOptions;
+﻿using Chat.AppOptions;
 using Chat.Bots;
 using Chat.BotServices;
 using Chat.Repositories;
@@ -12,13 +11,12 @@ namespace Chat
 {
     public class BotIoC : IBotIoC
     {
-        private ServiceCollection services;
         private ServiceProvider provider;
-        private IConfiguration configuration;
+
         public BotIoC(IServiceProvider serviceProvider)
         {
-            configuration = new ConfigurationBuilder().AddJsonFile("appSettings.json").Build();
-            services = new ServiceCollection();
+            var configuration = new ConfigurationBuilder().AddJsonFile("appSettings.json").Build();
+            var services = new ServiceCollection();
 
             services.AddSingleton<IMessageBotService, MessageBotService>((_) => new MessageBotService(serviceProvider.GetRequiredService<IMessageRepository>(), serviceProvider.GetRequiredService<IChatRepository>(), serviceProvider.GetRequiredService<IChatActionsRepository>(), serviceProvider.GetRequiredService<IUserRepository>()));
             services.AddSingleton<IChatActionBotService, ChatActionBotService>((_) => new ChatActionBotService(serviceProvider.GetRequiredService<IChatRepository>(), serviceProvider.GetRequiredService<IChatActionsRepository>()));

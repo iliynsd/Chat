@@ -13,14 +13,12 @@ namespace Chat.Web
     public class RequestHandler : IHandler
     {
         private Messenger _messenger;
-        private AppOptions.Options _options;
         
         private string RootRequestWithParamsTemplate(string method) => @$"/{method}?\w*";
         private string RootRequestTemplate(string method) => @$"/{method}";
         public RequestHandler(Messenger messenger, IOptions<AppOptions.Options> options)
         {
             _messenger = messenger;
-            _options = options.Value;
         }
         //get
         private async Task SignInAsync(HttpListenerRequest request, HttpListenerResponse response)
