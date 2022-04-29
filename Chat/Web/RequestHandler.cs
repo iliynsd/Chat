@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Chat.RequestModels;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System;
 using System.IO;
@@ -24,7 +25,7 @@ namespace Chat.Web
         //get
         private async Task SignInAsync(HttpListenerRequest request, HttpListenerResponse response)
         {
-            var userName = RequestParser.ParseParams(request.RawUrl)[0];
+            var userName = RequestParser.ParseGetRequestUserName(request.RawUrl).UserName;
             var chats = _messenger.SignIn(userName)?.Select(i => i.Name);
             if (chats is not null)
             {
@@ -37,7 +38,7 @@ namespace Chat.Web
         //post
         private async Task SignUpAsync(HttpListenerRequest request, HttpListenerResponse response)
         {
-            var userName = RequestParser.ParseJson(request.InputStream)[0];
+            var userName = RequestParser.ParsePostRequest<RequestUserName>(request.InputStream).UserName;
             var user = new User(userName, Type.User.ToString());
             var signUp = _messenger.SignUp(user);
             var answer = JsonConvert.SerializeObject(signUp, Formatting.Indented, new JsonSerializerSettings() { ReferenceLoopHandling = ReferenceLoopHandling.Ignore });
@@ -47,7 +48,7 @@ namespace Chat.Web
         private async Task CreateChatAsync(HttpListenerRequest request, HttpListenerResponse response)
         {
             var userName = request.Cookies.First(i => i.Name == "userName").Value;
-            var chatName = RequestParser.ParseJson(request.InputStream)[0];
+            var chatName = RequestParser.ParsePostRequest<RequestChatName>(request.InputStream).ChatName;
             var chat = new Chat(chatName);
             var chats = _messenger.CreateChat(userName, chat);
             var answer = JsonConvert.SerializeObject(chats, Formatting.Indented, new JsonSerializerSettings() { ReferenceLoopHandling = ReferenceLoopHandling.Ignore });
@@ -57,7 +58,7 @@ namespace Chat.Web
         private async Task OpenChatAsync(HttpListenerRequest request, HttpListenerResponse response)
         {
             var userName = request.Cookies.First(i => i.Name == "userName").Value;
-            var chatName = RequestParser.ParseParams(request.RawUrl)[0];
+            var chatName = RequestParser.ParseGetRequestChatName(request.RawUrl).ChatName;
             var result = _messenger.OpenChat(userName, chatName);
             var answer = JsonConvert.SerializeObject(result, Formatting.Indented, new JsonSerializerSettings() { ReferenceLoopHandling = ReferenceLoopHandling.Ignore });
             await ResponseWriter.WriteResponseAsync(answer, response.OutputStream);
@@ -66,7 +67,7 @@ namespace Chat.Web
         private async Task DeleteChatAsync(HttpListenerRequest request, HttpListenerResponse response)
         {
             var userName = request.Cookies.First(i => i.Name == "userName").Value;
-            var chatName = RequestParser.ParseJson(request.InputStream)[0];
+            var chatName = RequestParser.ParsePostRequest<RequestChatName>(request.InputStream).ChatName;
             var userChats = _messenger.DeleteChat(userName, chatName);
             var answer = JsonConvert.SerializeObject(userChats, Formatting.Indented, new JsonSerializerSettings() { ReferenceLoopHandling = ReferenceLoopHandling.Ignore });
             await ResponseWriter.WriteResponseAsync(answer, response.OutputStream);
@@ -75,7 +76,7 @@ namespace Chat.Web
         private async Task ExitChatAsync(HttpListenerRequest request, HttpListenerResponse response)
         {
             var userName = request.Cookies.First(i => i.Name == "userName").Value;
-            var chatName = RequestParser.ParseParams(request.RawUrl)[0];
+            var chatName = RequestParser.ParseGetRequestChatName(request.RawUrl).ChatName;
             var userChats = _messenger.ExitChat(userName, chatName);
             var answer = JsonConvert.SerializeObject(userChats, Formatting.Indented, new JsonSerializerSettings() { ReferenceLoopHandling = ReferenceLoopHandling.Ignore });
             await ResponseWriter.WriteResponseAsync(answer, response.OutputStream);
@@ -84,9 +85,9 @@ namespace Chat.Web
         private async Task AddMessageAsync(HttpListenerRequest request, HttpListenerResponse response)
         {
             var userName = request.Cookies.First(i => i.Name == "userName").Value;
-            var parameters = RequestParser.ParseJson(request.InputStream);
-            var chatName = parameters[0];
-            var textOfMessage = parameters[1];
+            var parameters = RequestParser.ParsePostRequest<RequestChatNameAndMessageText>(request.InputStream);
+            var chatName = parameters.ChatName;
+            var textOfMessage = parameters.MessageText;
             var chatWithMessages = await _messenger.AddMessage(userName, chatName, textOfMessage);
             var answer = JsonConvert.SerializeObject(chatWithMessages, Formatting.Indented, new JsonSerializerSettings() { ReferenceLoopHandling = ReferenceLoopHandling.Ignore });
             await ResponseWriter.WriteResponseAsync(answer, response.OutputStream);
@@ -94,9 +95,9 @@ namespace Chat.Web
         //post
         private async Task AddUserToChatAsync(HttpListenerRequest request, HttpListenerResponse response)
         {
-            var parameters = RequestParser.ParseJson(request.InputStream);
-            var userName = parameters[0];
-            var chatName = parameters[1];
+            var parameters = RequestParser.ParsePostRequest<RequestUserNameAndChatName>(request.InputStream);
+            var userName = parameters.UserName;
+            var chatName = parameters.ChatName;
             var chatWithMesAndUsers = _messenger.AddUserToChat(userName, chatName);
             var answer = JsonConvert.SerializeObject(chatWithMesAndUsers, Formatting.Indented, new JsonSerializerSettings() { ReferenceLoopHandling = ReferenceLoopHandling.Ignore });
             await ResponseWriter.WriteResponseAsync(answer, response.OutputStream);
@@ -105,9 +106,9 @@ namespace Chat.Web
         private async Task DeleteMessageAsync(HttpListenerRequest request, HttpListenerResponse response)
         {
             var userName = request.Cookies.First(i => i.Name == "userName").Value;
-            var parameters = RequestParser.ParseParams(request.RawUrl);
-            var chatName = parameters[0];
-            var messageId = Convert.ToInt32(parameters[1]);
+            var parameters = RequestParser.ParseGetRequestChatNameAndMessageId(request.RawUrl);
+            var chatName = parameters.ChatName;
+            var messageId = parameters.MessageId;
             var messageDeleted = _messenger.DeleteMessage(userName, chatName, messageId);
             var answer = JsonConvert.SerializeObject(messageDeleted, Formatting.Indented, new JsonSerializerSettings() { ReferenceLoopHandling = ReferenceLoopHandling.Ignore });
             await ResponseWriter.WriteResponseAsync(answer, response.OutputStream);

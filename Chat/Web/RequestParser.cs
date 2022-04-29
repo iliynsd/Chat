@@ -1,68 +1,42 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System.Collections.Generic;
+﻿using Chat.RequestModels;
+using Newtonsoft.Json;
+using System;
 using System.IO;
+using System.Linq;
 
 namespace Chat
 {
     public static class RequestParser
     {
-        public static List<string> ParseParams(Stream request)
+        public static T ParsePostRequest<T>(Stream request)
         {
-            List<string> result = null;
-            using (var reader = new StreamReader(request))
-            {
-                var line = reader.ReadLine();
-                if (line is not null)
-                {
-                    var parameteres = line.Split('&');
-                    result = new List<string>();
-
-                    foreach (var param in parameteres)
-                    {
-                        result.Add(param.Split('=')[1]);
-                    }
-                }
-            }
-
-            return result;
-        }
-
-
-        public static List<string> ParseParams(string request)
-        {
-            var result = new List<string>();
-            var parameteres = request.Split('&');
-
-            foreach (var param in parameteres)
-            {
-                result.Add(param.Split('=')[1]);
-            }
-
-            return result;
-        }
-
-        public static List<string> ParseJson(Stream request)
-        {
-            List<string> result = new List<string>();
             using (var reader = new StreamReader(request))
             {
                 var json = reader.ReadToEnd();
-                var data = JObject.Parse(json);
-                
-                if(data.ContainsKey("userName"))
-                {
-                    result.Add(data.Property("userName").Name);
-                }
-                if(data.ContainsKey("chatName"))
-                {
-                    result.Add(data.Property("chatName").Name);
-                }
-                if(data.ContainsKey("textofMessage"))
-                {
-                    result.Add(data.Property("textOfMessage").Name);
-                }
+                return  JsonConvert.DeserializeObject<T>(json);
             }
+        }
+
+        public static RequestUserName ParseGetRequestUserName(string url)
+        {
+            var param = new RequestUserName();
+            param.UserName = url.Split('=').LastOrDefault();
+            return param;
+        }
+
+        public static RequestChatName ParseGetRequestChatName(string url)
+        {
+            var param = new RequestChatName();
+            param.ChatName = url.Split('=').LastOrDefault();
+            return param;
+        }
+
+        public static RequestChatNameAndMessageId ParseGetRequestChatNameAndMessageId(string url)
+        {
+            var result = new RequestChatNameAndMessageId();
+            var parameters = url.Split('&');
+            result.ChatName = parameters?[0].Split('=')?[1];
+            result.MessageId = Convert.ToInt32(parameters?[1].Split('=')?[1]);
             return result;
         }
     }
