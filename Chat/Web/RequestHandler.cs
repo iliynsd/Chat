@@ -28,21 +28,15 @@ namespace Chat.Web
         private async Task SignInAsync(HttpListenerRequest request, HttpListenerResponse response)
         {
             var userName = RequestParser.ParseGetRequestUserName(request.RawUrl).UserName;
-            var chats = _messenger.SignIn(userName)?.Select(i => i.Name);
+            var chats = _messenger.SignIn(userName);
             if (chats is not null)
             {
                 var cookie = new Cookie("userName", userName);
                 response.AppendCookie(cookie);
             }
-            try
-            {
-                var  chatsDto = _mapper.Map<List<ChatDto>>(chats);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
-            var answer = JsonConvert.SerializeObject(chats, Formatting.Indented, new JsonSerializerSettings() { ReferenceLoopHandling = ReferenceLoopHandling.Ignore });
+               
+            var chatsDto = _mapper.Map<List<ChatDto>>(chats);
+            var answer = JsonConvert.SerializeObject(chatsDto, Formatting.Indented, new JsonSerializerSettings() { ReferenceLoopHandling = ReferenceLoopHandling.Ignore });
             await ResponseWriter.WriteResponseAsync(answer, response.OutputStream);
         }
         //post
@@ -61,7 +55,8 @@ namespace Chat.Web
             var chatName = RequestParser.ParsePostRequest<RequestChatName>(request.InputStream).ChatName;
             var chat = new Chat(chatName);
             var chats = _messenger.CreateChat(userName, chat);
-            var answer = JsonConvert.SerializeObject(chats, Formatting.Indented, new JsonSerializerSettings() { ReferenceLoopHandling = ReferenceLoopHandling.Ignore });
+            var chatsDto = _mapper.Map<List<ChatDto>>(chats);
+            var answer = JsonConvert.SerializeObject(chatsDto, Formatting.Indented, new JsonSerializerSettings() { ReferenceLoopHandling = ReferenceLoopHandling.Ignore });
             await ResponseWriter.WriteResponseAsync(answer, response.OutputStream);
         }
         //get
@@ -86,7 +81,8 @@ namespace Chat.Web
             var userName = request.Cookies.First(i => i.Name == "userName").Value;
             var chatName = RequestParser.ParsePostRequest<RequestChatName>(request.InputStream).ChatName;
             var userChats = _messenger.DeleteChat(userName, chatName);
-            var answer = JsonConvert.SerializeObject(userChats, Formatting.Indented, new JsonSerializerSettings() { ReferenceLoopHandling = ReferenceLoopHandling.Ignore });
+            var chatsDto = _mapper.Map<List<ChatDto>>(userChats);
+            var answer = JsonConvert.SerializeObject(chatsDto, Formatting.Indented, new JsonSerializerSettings() { ReferenceLoopHandling = ReferenceLoopHandling.Ignore });
             await ResponseWriter.WriteResponseAsync(answer, response.OutputStream);
         }
         //get
@@ -95,7 +91,8 @@ namespace Chat.Web
             var userName = request.Cookies.First(i => i.Name == "userName").Value;
             var chatName = RequestParser.ParseGetRequestChatName(request.RawUrl).ChatName;
             var userChats = _messenger.ExitChat(userName, chatName);
-            var answer = JsonConvert.SerializeObject(userChats, Formatting.Indented, new JsonSerializerSettings() { ReferenceLoopHandling = ReferenceLoopHandling.Ignore });
+            var chatsDto = _mapper.Map<List<ChatDto>>(userChats);
+            var answer = JsonConvert.SerializeObject(chatsDto, Formatting.Indented, new JsonSerializerSettings() { ReferenceLoopHandling = ReferenceLoopHandling.Ignore });
             await ResponseWriter.WriteResponseAsync(answer, response.OutputStream);
         }
         //post
@@ -105,8 +102,9 @@ namespace Chat.Web
             var parameters = RequestParser.ParsePostRequest<RequestChatNameAndMessageText>(request.InputStream);
             var chatName = parameters.ChatName;
             var textOfMessage = parameters.MessageText;
-            var chatWithMessages = await _messenger.AddMessage(userName, chatName, textOfMessage);
-            var answer = JsonConvert.SerializeObject(chatWithMessages, Formatting.Indented, new JsonSerializerSettings() { ReferenceLoopHandling = ReferenceLoopHandling.Ignore });
+            var messages = await _messenger.AddMessage(userName, chatName, textOfMessage);
+            var messagesDto = _mapper.Map<List<MessageDto>>(messages);
+            var answer = JsonConvert.SerializeObject(messagesDto, Formatting.Indented, new JsonSerializerSettings() { ReferenceLoopHandling = ReferenceLoopHandling.Ignore });
             await ResponseWriter.WriteResponseAsync(answer, response.OutputStream);
         }
         //post
@@ -115,8 +113,9 @@ namespace Chat.Web
             var parameters = RequestParser.ParsePostRequest<RequestUserNameAndChatName>(request.InputStream);
             var userName = parameters.UserName;
             var chatName = parameters.ChatName;
-            var chatWithMesAndUsers = _messenger.AddUserToChat(userName, chatName);
-            var answer = JsonConvert.SerializeObject(chatWithMesAndUsers, Formatting.Indented, new JsonSerializerSettings() { ReferenceLoopHandling = ReferenceLoopHandling.Ignore });
+            var chatUsers = _messenger.AddUserToChat(userName, chatName);
+            var usersDto = _mapper.Map<List<UserDto>>(chatUsers);
+            var answer = JsonConvert.SerializeObject(usersDto, Formatting.Indented, new JsonSerializerSettings() { ReferenceLoopHandling = ReferenceLoopHandling.Ignore });
             await ResponseWriter.WriteResponseAsync(answer, response.OutputStream);
         }
         //get
