@@ -13,7 +13,7 @@ namespace Chat
             using (var reader = new StreamReader(request))
             {
                 var json = reader.ReadToEnd();
-                return  JsonConvert.DeserializeObject<T>(json);
+                return JsonConvert.DeserializeObject<T>(json);
             }
         }
 

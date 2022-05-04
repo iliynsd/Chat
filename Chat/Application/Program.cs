@@ -1,6 +1,7 @@
 ﻿using Chat.AppOptions;
 using Chat.Bots;
 using Chat.Dal;
+using Chat.MapperConfigurations;
 using Chat.Repositories;
 using Chat.Repositories.PostgresRepositories;
 using Chat.UI;
@@ -38,15 +39,13 @@ namespace Chat
                     serviceCollection.AddTransient<IChatRepository, PostgresChatRepository>();
                     serviceCollection.AddTransient<IUserRepository, PostgresUserRepository>();
                     serviceCollection.AddTransient<IChatActionsRepository, PostgresChatActionsRepository>();
-
-
                     serviceCollection.AddScoped<IHandler, RequestHandler>();
                     serviceCollection.AddSingleton<ServerHost>();
-
-
                     serviceCollection.AddSingleton<IBotIoC, BotIoC>();
-                    serviceCollection.AddSingleton<Messenger>();
 
+                    serviceCollection.AddAutoMapper(typeof(UserMapperConfuguration), typeof(ChatMapperConfiguration), typeof(MessageMapperConfiguration));
+
+                    serviceCollection.AddSingleton<Messenger>();
                 });
         }
     }

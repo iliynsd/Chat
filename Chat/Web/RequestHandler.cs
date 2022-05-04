@@ -1,8 +1,10 @@
-﻿using Chat.RequestModels;
+﻿using AutoMapper;
+using Chat.DTO;
+using Chat.RequestModels;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System;
-using System.IO;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
@@ -13,12 +15,14 @@ namespace Chat.Web
     public class RequestHandler : IHandler
     {
         private Messenger _messenger;
-        
+        private IMapper _mapper;
         private string RootRequestWithParamsTemplate(string method) => @$"/{method}?\w*";
         private string RootRequestTemplate(string method) => @$"/{method}";
-        public RequestHandler(Messenger messenger, IOptions<AppOptions.Options> options)
+
+        public RequestHandler(Messenger messenger, IOptions<AppOptions.Options> options, IMapper mapper)
         {
             _messenger = messenger;
+            _mapper = mapper;
         }
         //get
         private async Task SignInAsync(HttpListenerRequest request, HttpListenerResponse response)
@@ -29,6 +33,14 @@ namespace Chat.Web
             {
                 var cookie = new Cookie("userName", userName);
                 response.AppendCookie(cookie);
+            }
+            try
+            {
+                var  chatsDto = _mapper.Map<List<ChatDto>>(chats);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
             }
             var answer = JsonConvert.SerializeObject(chats, Formatting.Indented, new JsonSerializerSettings() { ReferenceLoopHandling = ReferenceLoopHandling.Ignore });
             await ResponseWriter.WriteResponseAsync(answer, response.OutputStream);
@@ -58,7 +70,14 @@ namespace Chat.Web
             var userName = request.Cookies.First(i => i.Name == "userName").Value;
             var chatName = RequestParser.ParseGetRequestChatName(request.RawUrl).ChatName;
             var result = _messenger.OpenChat(userName, chatName);
-            var answer = JsonConvert.SerializeObject(result, Formatting.Indented, new JsonSerializerSettings() { ReferenceLoopHandling = ReferenceLoopHandling.Ignore });
+            var authorsOfMessages = result.messages.Join(result.users, m => m.UserId, u => u.Id, (m, u) => new User(u.Name, u.Type)).ToList();
+            var messagesDto = new List<MessageDto>();
+            for (int i = 0; i < result.messages.Count(); i++)
+            {
+                var messageDto = _mapper.Map<MessageDto>(result.messages[i], options => options.Items["AuthorName"] = authorsOfMessages[i].Name);
+                messagesDto.Add(messageDto);
+            }
+            var answer = JsonConvert.SerializeObject(messagesDto, Formatting.Indented, new JsonSerializerSettings() { ReferenceLoopHandling = ReferenceLoopHandling.Ignore });
             await ResponseWriter.WriteResponseAsync(answer, response.OutputStream);
         }
         //post

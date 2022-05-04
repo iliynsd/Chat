@@ -23,6 +23,7 @@ namespace Chat.Repositories
 
         public List<User> GetAll() => _dataContext.Users.ToList();
 
+        public User GetById(int userId) => _dataContext.Users.FirstOrDefault(i => i.Id == userId);
 
         public bool IsUserExist(string username) => _dataContext.Users.Select(i => i.Name).Contains(username);
 

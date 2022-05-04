@@ -8,6 +8,7 @@ namespace Chat.Repositories
 
         public void Delete(User user);
         public User Get(string userName);
+        public User GetById(int userId);
 
         public List<User> GetAll();
 

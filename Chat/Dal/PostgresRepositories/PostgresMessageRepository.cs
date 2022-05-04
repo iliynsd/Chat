@@ -25,7 +25,7 @@ namespace Chat.Repositories.PostgresRepositories
                 return true;
             }
             return false;
-        } 
+        }
 
         public List<Message> GetAll() => _dataContext.Messages.Where(i => i.IsActive).ToList();
 

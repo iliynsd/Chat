@@ -28,6 +28,7 @@ namespace Chat
                 var response = context.Response;
 
                 var _ = _handler.HandleAsync(request, response);
+
             }
         }
     }

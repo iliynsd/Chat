@@ -1,7 +1,6 @@
 using Chat.Bots;
 using Chat.Models;
 using Chat.Repositories;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using System;
@@ -101,7 +100,7 @@ namespace Chat
 
                 var botInvoker = botIoc.Get<IBotsInvoker<IMessageBot, Message>>();
                 await botInvoker.Invoke(bots, message);
-               
+
                 return (chat, messages.GetChatMessages(chat), users.GetAll().FindAll(i => chat.Users.Contains(i)));
             }
         }
