@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Chat.DTO;
+using System.Collections.Generic;
 
 namespace Chat.MapperConfigurations
 {
@@ -7,7 +8,8 @@ namespace Chat.MapperConfigurations
     {
         public MessageMapperConfiguration()
         {
-            CreateMap<Message, MessageDto>().ConvertUsing<MessageAuthorNameResolver>();
+            CreateMap<Message, MessageDto>();
+            
         }
     }
 }

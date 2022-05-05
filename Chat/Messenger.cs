@@ -70,7 +70,7 @@ namespace Chat
             }
         }
 
-        public async Task<(Chat chat, List<Message> messages, List<User> users)> AddMessage(string userName, string chatName, string textOfMessage)
+        public async Task<(Chat chat, List<Message> messages)> AddMessage(string userName, string chatName, string textOfMessage)
         {
             using (var scope = _serviceProvider.CreateScope())
             {
@@ -93,19 +93,17 @@ namespace Chat
                 actions.Save();
                 messages.Save();
 
-
                 var botIoc = _serviceProvider.GetRequiredService<IBotIoC>();
                 var bots = botIoc.GetServices<IMessageBot>().ToList();
-
 
                 var botInvoker = botIoc.Get<IBotsInvoker<IMessageBot, Message>>();
                 await botInvoker.Invoke(bots, message);
 
-                return (chat, messages.GetChatMessages(chat), users.GetAll().FindAll(i => chat.Users.Contains(i)));
+                return (chat, messages.GetChatMessages(chat));
             }
         }
 
-        public (Chat chat, List<Message> messages, List<User> users) OpenChat(string userName, string chatName)
+        public (Chat chat, List<Message> messages) OpenChat(string userName, string chatName)
         {
             using (var scope = _serviceProvider.CreateScope())
             {
@@ -115,10 +113,10 @@ namespace Chat
                 var actions = scope.ServiceProvider.GetRequiredService<IChatActionsRepository>();
 
                 var chat = chats.GetChat(chatName);
+                chat.Users.Count();
                 messages.GetChatMessages(chat).ForEach(i => i.IsViewed = true);
                 messages.Save();
-                var chatUsers = users.GetAll().FindAll(i => chat.Users.Contains(i));
-
+                
                 var actionUserLeftChat = actions.Get($"User {userName} left chat - {chat.Name}");
 
                 var actualMessages = messages.GetChatMessages(chat);
@@ -128,7 +126,7 @@ namespace Chat
                     actualMessages = messages.GetChatMessages(chat).FindAll(i => i.Time < actionUserLeftChat.Time);
                 }
 
-                return (chat, actualMessages, chatUsers);
+                return (chat, actualMessages);
             }
         }
 
@@ -149,32 +147,6 @@ namespace Chat
                 actions.Save();
                 chats.Save();
                 return chats.GetAll().FindAll(i => i.Users.Contains(users.Get(userName)));
-            }
-        }
-
-
-        public (Chat chat, List<Message> messages, List<User> users) DeleteMessage(string userName, string chatName, string textOfMessage)
-        {
-            using (var scope = _serviceProvider.CreateScope())
-            {
-                var chats = scope.ServiceProvider.GetRequiredService<IChatRepository>();
-                var messages = scope.ServiceProvider.GetRequiredService<IMessageRepository>();
-                var actions = scope.ServiceProvider.GetRequiredService<IChatActionsRepository>();
-                var users = scope.ServiceProvider.GetRequiredService<IUserRepository>();
-                var chat = chats.GetChat(chatName);
-                var message = messages.GetChatMessages(chat).Find(i => i.Text == textOfMessage);
-
-                if (message != null && message.Time.AddDays(1) >= DateTime.Now)
-                {
-                    messages.Delete(message);
-                    var action = new ChatAction(ChatActions.UserDeleteMessage(userName, chatName));
-                    actions.Add(action);
-                }
-
-                actions.Save();
-                chats.Save();
-                messages.Save();
-                return (chat, messages.GetChatMessages(chat), users.GetAll().FindAll(i => chat.Users.Contains(i)));
             }
         }
 
@@ -226,7 +198,7 @@ namespace Chat
                 var actions = scope.ServiceProvider.GetRequiredService<IChatActionsRepository>();
 
                 chat.Users.Add(users.Get(userName));
-
+                chat.Users.Count();
                 var action = new ChatAction(ChatActions.UserCreateChat(chat.Users.First().Name, chat.Name));
                 actions.Add(action);
                 chats.Add(chat);
@@ -237,18 +209,18 @@ namespace Chat
             }
         }
 
-        public (Chat chat, List<Message> messages, List<User> users) AddUserToChat(string userName, string chatName)
+        public Chat AddUserToChat(string userName, string chatName)
         {
             using (var scope = _serviceProvider.CreateScope())
             {
                 var chats = scope.ServiceProvider.GetRequiredService<IChatRepository>();
                 var users = scope.ServiceProvider.GetRequiredService<IUserRepository>();
-                var messages = scope.ServiceProvider.GetRequiredService<IMessageRepository>();
                 var chat = chats.GetChat(chatName);
                 var user = users.Get(userName);
                 chat.Users.Add(user);
+                chat.Users.Count();
                 chats.Save();
-                return (chat, messages.GetChatMessages(chat), users.GetAll().FindAll(i => chat.Users.Contains(i)));
+                return chat;
             }
         }
 

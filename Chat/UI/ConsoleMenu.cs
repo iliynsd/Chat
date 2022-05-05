@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace Chat.Utils
@@ -165,7 +166,7 @@ namespace Chat.Utils
             var userName = GetUserName(input);
             var chatName = GetChatName(input);
             var result = _messenger.OpenChat(userName, chatName);
-            ShowChatMenu(result.chat, result.messages, result.users);
+            ShowChatMenu(result.chat, result.messages, result.chat.Users.ToList());
         }
 
         private void CloseChat(string input)
@@ -209,16 +210,16 @@ namespace Chat.Utils
             var chatName = GetChatName(input);
             var textOfMessage = GetTextOfMessage(input);
             var result = await _messenger.AddMessage(userName, chatName, textOfMessage);
-            ShowChatMenu(result.chat, result.messages, result.users);
+            ShowChatMenu(result.chat, result.messages, result.chat.Users.ToList());
         }
 
         private void DeleteMessage(string input)
         {
             var userName = GetUserName(input);
             var chatName = GetChatName(input);
-            var textOfMessage = GetTextOfMessage(input);
-            var result = _messenger.DeleteMessage(userName, chatName, textOfMessage);
-            ShowChatMenu(result.chat, result.messages, result.users);
+            var mesId = GetIdOfMessage(input);
+            var result = _messenger.DeleteMessage(userName, chatName, mesId);
+            Console.WriteLine(result);
         }
 
         private void AddUserToChat(string input)
@@ -226,7 +227,6 @@ namespace Chat.Utils
             var userName = GetUserName(input);
             var chatName = GetChatName(input);
             var result = _messenger.AddUserToChat(userName, chatName);
-            ShowChatMenu(result.chat, result.messages, result.users);
         }
 
         private string GetUserName(string input)
@@ -281,6 +281,24 @@ namespace Chat.Utils
             }
 
             return textOfMessage;
+        }
+
+        private int GetIdOfMessage(string input)
+        {
+            var parameters = input.Split(' ');
+            var mesId = -1;
+
+            if (parameters.Length > 3)
+            {
+                mesId = int.Parse(parameters[3]);
+            }
+            else
+            {
+                Console.WriteLine("Enter id of message");
+                mesId = int.Parse(Console.ReadLine());
+            }
+
+            return mesId;
         }
     }
 }
