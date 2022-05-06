@@ -3,7 +3,6 @@ using Chat.DTO;
 using Chat.RequestModels;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -39,6 +38,7 @@ namespace Chat.Web
             var answer = JsonConvert.SerializeObject(chatsDto, Formatting.Indented, new JsonSerializerSettings() { ReferenceLoopHandling = ReferenceLoopHandling.Ignore });
             await ResponseWriter.WriteResponseAsync(answer, response.OutputStream);
         }
+
         //post
         private async Task SignUpAsync(HttpListenerRequest request, HttpListenerResponse response)
         {
@@ -65,11 +65,18 @@ namespace Chat.Web
             var userName = request.Cookies.First(i => i.Name == "userName").Value;
             var chatName = RequestParser.ParseGetRequestChatName(request.RawUrl).ChatName;
             var result = _messenger.OpenChat(userName, chatName);
-            var authorsOfMessages = result.messages.Join(result.chat.Users.ToList(), m => m.UserId, u => u.Id, (m, u) => new User(u.Name, u.Type)).Select(i => i.Name).ToList();
-            var messagesDto = _mapper.Map<List<MessageDto>>(result.messages);
-            var answer = JsonConvert.SerializeObject(messagesDto, Formatting.Indented, new JsonSerializerSettings() { ReferenceLoopHandling = ReferenceLoopHandling.Ignore });
-            await ResponseWriter.WriteResponseAsync(answer, response.OutputStream);
+            var authorsOfMessages = result.messages.Join(result.chat.Users.ToList(), m => m.UserId, u => u.Id, (m, u) => new User(u.Name, u.Type)).ToList();
+            var messagesDto = new List<MessageDto>();
+            
+            for(int i=0; i < result.messages.Count;i++)
+            {
+               messagesDto.Add(_mapper.Map<MessageDto>((result.messages[i], authorsOfMessages[i])));
+            }
+                
+            var answer = JsonConvert.SerializeObject(messagesDto, Formatting.Indented, new JsonSerializerSettings() { ReferenceLoopHandling = ReferenceLoopHandling.Ignore });            
+            await ResponseWriter.WriteResponseAsync(answer, response.OutputStream); 
         }
+        
         //post
         private async Task DeleteChatAsync(HttpListenerRequest request, HttpListenerResponse response)
         {

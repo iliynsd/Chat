@@ -34,7 +34,5 @@ namespace Chat.Bots
 
             return Task.CompletedTask;
         }
-
-
     }
 }
